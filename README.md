@@ -1,5 +1,5 @@
 # turn-page-refresh
-turn page refresh datas
+turn page refresh datas, used on STB(Set Top Box), compatible for all inner-browser of STB.
 
 You can provide a list includes more items, `turn-page-refresh` will control it with key handler.
 
