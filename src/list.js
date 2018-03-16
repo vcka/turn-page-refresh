@@ -71,6 +71,8 @@ export default class List {
 
     this.updateRows(this.items, datas)
     this.updateFocus()
+
+    this.execCallbacks('moveUpDown')
   }
 
   getPages(type, target) {
@@ -144,6 +146,16 @@ export default class List {
     }
   }
 
+  execCallbacks(fnName) {
+    const callbacks = this.callbacks
+    if (!callbacks) { return false }
+    const fn = callbacks[fnName] || function() {}
+
+    fn({
+      data: this.datas[this.currIdx]
+    })
+  }
+
   idxChgHandler(direction) {
 
     // update the list content
@@ -153,11 +165,7 @@ export default class List {
     // update pages
     this.getPages()
 
-    // to exec callback of moving
-    const moveUpDown = this.callbacks && this.callbacks.moveUpDown
-    moveUpDown && moveUpDown({
-      direction, data: this.datas[this.currIdx]
-    })
+    this.execCallbacks('moveUpDown')
   }
 
   up() {
