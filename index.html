@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="page-view-size" content="1280*720">
+    <title>Magic</title>
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    ul {
+      width: 384px;
+      height: 720px;
+      background: black;
+      margin-left: 20px;
+      margin-top: 20px;
+    }
+
+    .arrow {
+      height: 80px;
+      width: 100%;
+      background: green;
+    }
+
+    .focus {
+      background-color: red;
+    }
+
+    .tvod-list-item {
+      list-style: none;
+      width: 100%;
+      height: 80px;
+      color: #fff;
+      font-size: 32px;
+    }
+
+    .tvod-list-item span {
+      display: inline-block;
+      float: left;
+      height: 80px;
+      line-height: 80px;
+      text-align: center;
+    }
+
+    .tvod-list-item span img {
+      width: 80px;
+      height: 40px;
+      vertical-align: middle;
+    }
+
+    .tvod-list-item-no {
+      color: rgb(131, 116, 88);
+    }
+
+    .tvod-list-item-logo {
+    }
+
+    .tvod-list-item-icon {
+      float: right;
+
+    }
+
+    .tvod-list-item .tvod-list-item-icon img {
+      width: 22px;
+      height: 22px;
+    }
+
+    .tvod-list-item-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    </style>
+  </head>
+  <body>
+    <ul>
+      <div class="arrow up"></div>
+      <li class="tvod-list-item">
+        <span class="tvod-list-item-no" style="width:20%;"></span>
+        <span class="tvod-list-item-name" style="width:70%;"></span>
+        <span class="tvod-list-item-icon" style="width:10%;"><img src="./assets/images/icon_tvod_22x22.png" /></span>
+      </li>
+      <li class="tvod-list-item">
+        <span class="tvod-list-item-no" style="width:20%;"></span>
+        <span class="tvod-list-item-name" style="width:70%;"></span>
+        <span class="tvod-list-item-icon" style="width:10%;"><img src="./assets/images/icon_tvod_22x22.png" /></span>
+      </li>
+      <li class="tvod-list-item">
+        <span class="tvod-list-item-no" style="width:20%;"></span>
+        <span class="tvod-list-item-name" style="width:70%;"></span>
+        <span class="tvod-list-item-icon" style="width:10%;"><img src="./assets/images/icon_tvod_22x22.png" /></span>
+      </li>
+      <li class="tvod-list-item">
+        <span class="tvod-list-item-no" style="width:20%;"></span>
+        <span class="tvod-list-item-name" style="width:70%;"></span>
+        <span class="tvod-list-item-icon" style="width:10%;"><img src="./assets/images/icon_tvod_22x22.png" /></span>
+      </li>
+      <li class="tvod-list-item">
+        <span class="tvod-list-item-no" style="width:20%;"></span>
+        <span class="tvod-list-item-name" style="width:70%;"></span>
+        <span class="tvod-list-item-icon" style="width:10%;"><img src="./assets/images/icon_tvod_22x22.png" /></span>
+      </li>
+      <li class="tvod-list-item">
+        <span class="tvod-list-item-no" style="width:20%;"></span>
+        <span class="tvod-list-item-name" style="width:70%;"></span>
+        <span class="tvod-list-item-icon" style="width:10%;"><img src="./assets/images/icon_tvod_22x22.png" /></span>
+      </li>
+      <li class="tvod-list-item">
+        <span class="tvod-list-item-no" style="width:20%;"></span>
+        <span class="tvod-list-item-name" style="width:70%;"></span>
+        <span class="tvod-list-item-icon" style="width:10%;"><img src="./assets/images/icon_tvod_22x22.png" /></span>
+      </li>
+      <div class="arrow down"></div>
+    </ul>
+    <script src="./src/mooc.js"></script>
+    <script src="./dist/turn.iife.js"></script>
+    <script>
+    function fillZero(n) {
+      let m = ('' + n).split('')
+
+      return new Array(3 - m.length + 1).join('0') + n
+    }
+    const List = turn.List
+    const list = new List({
+      statics: {
+        nos: document.querySelectorAll('.tvod-list-item-no'),
+        cnames: document.querySelectorAll('.tvod-list-item-name'),
+        icons: document.querySelectorAll('.tvod-list-item-icon img'),
+        items: [].slice.call(document.querySelectorAll('ul li'))
+      },
+      datas: clist,
+      callbacks: {
+        moveUpDown: function(opts) {
+          console.log([].slice.call(arguments)[0], 'moveUpDown')
+        }
+      },
+
+      updateFocus: function(opts) {
+        if (!opts) { return false }
+        const newIcon = opts.statics.icons[opts.newIdx]
+        if (opts.newIdx !== opts.oldIdx) {
+          const oldIcon = opts.statics.icons[opts.oldIdx]
+          if (oldIcon) {
+            oldIcon.src = './assets/images/icon_tvod_22x22.png'
+            oldIcon.style.width = '22px'
+            oldIcon.style.height = '22px'
+          }
+        }
+
+        if (newIcon) {
+          newIcon.src = './assets/images/icon_tvod_26x26.png'
+          newIcon.style.width = '26px'
+          newIcon.style.height = '26px'
+        }
+      },
+
+      updateTpl: function(statics, index, data) {
+        if (!statics || !data) { return false }
+        const no = statics.nos && statics.nos[index]
+        const name = statics.cnames && statics.cnames[index]
+        const icon = statics.icons && statics.icons[index]
+        no && (no.innerHTML = fillZero(data.ChannelNumber))
+        name && (name.innerHTML = data.ChannelName)
+        icon && (icon.style.visibility = 'visible')
+      },
+
+      clearTpl: function(statics) {
+        if (!statics) {
+          return false
+        }
+
+        for (let i = 0; i < statics.items.length; i++) {
+          const no = statics.nos[i]
+          const name = statics.cnames[i]
+          const icon = statics.icons[i]
+          no.innerHTML = ''
+          name.innerHTML = ''
+          icon.style.visibility = 'hidden'
+        }
+      }
+    })
+
+    window.onkeydown = event => {
+      list.keyHandler(event.keyCode || event.which)
+    }
+    </script>
+  </body>
+</html>
