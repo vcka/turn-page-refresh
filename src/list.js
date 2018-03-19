@@ -21,7 +21,7 @@ export default class List {
 
     this.datas = opts.datas || []
     if (!this.datas || !this.datas.length) {
-      throw new Error('[Turn/List] no usable datas.')
+      return false
     }
 
     this.updateTpl = opts.updateTpl
@@ -46,7 +46,9 @@ export default class List {
     this.totalPages = Math.ceil(this.datas.length / this.rows)
     this.currPage = 0
     this._updateFocus = opts.updateFocus
-
+    this._focus = opts.focus
+    this._blur = opts.blur
+    this.noInitFocus = opts.noInitFocus
     this.keys = {
       UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
       PAGE_UP: 33, PAGE_DOWN: 34, OK: 13, BACK: 8
@@ -57,12 +59,18 @@ export default class List {
     }
 
     this.init()
+  }
 
-    // focus the first
-    cls.add(this.items[0], 'focus')
+  reinit(opts) {
+    if (!opts || !opts.datas || !opts.datas.length) { return false }
+    this.datas = opts.datas
+    this.dataIdx = this.currIdx = this.oldIdx = 0
+    this.noInitFocus = opts.noInitFocus
+    this.init()
   }
 
   init() {
+    if (!this.datas || !this.datas.length) { return false }
     const datas = this.datas.slice(this.dataIdx, this.dataIdx + this.rows)
 
     if (!datas || !datas.length) {
@@ -73,6 +81,7 @@ export default class List {
     this.updateFocus()
 
     this.execCallbacks('moveUpDown')
+    this.execCallbacks('inited')
   }
 
   getPages(type, target) {
@@ -95,11 +104,13 @@ export default class List {
     items = items || this.items
 
     if (!items || !items.length) {
-      throw new Error('[Turn/List] update rows failed, no items.')
+      // throw new Error('[Turn/List] update rows failed, no items.')
+      return false
     }
 
     if (!datas || !datas.length) {
-      throw new Error('[Turn/List] update rows failed, no datas.')
+      // throw new Error('[Turn/List] update rows failed, no datas.')
+      return false
     }
 
     this.clearTpl(this.statics)
@@ -109,20 +120,53 @@ export default class List {
         this.updateTpl(this.statics, i, datas[i])
       }
     }
+
+    this.execCallbacks('updateRowsDone')
+  }
+
+  focus() {
+    if (!this.datas || !this.datas.length) { return false }
+
+    cls.add(this.items[this.currIdx], 'focus')
+
+    if (this._focus && typeof(this._focus) === 'function') {
+      this._focus(this.items[this.currIdx])
+    }
+  }
+
+  blur() {
+    if (!this.datas || !this.datas.length) { return false }
+    cls.remove(this.items[this.currIdx], 'focus')
+
+    if (this._blur && typeof(this._blur) === 'function') {
+      this._blur(this.items[this.currIdx])
+    }
   }
 
   updateFocus() {
+    if (!this.datas || !this.datas.length) { return false }
     const newEl = this.items[this.currIdx]
     const oldEl = this.items[this.oldIdx]
-    cls.remove(oldEl, 'focus')
-    cls.add(newEl, 'focus')
+
+    if (this.currIdx !== this.oldIdx) {
+      cls.remove(oldEl, 'focus')
+    }
+
+    if (!this.noInitFocus) {
+      cls.add(newEl, 'focus')
+    } else {
+      this.noInitFocus = false
+    }
 
     this._updateFocus && this._updateFocus({
       newIdx: this.currIdx, oldIdx: this.oldIdx, statics: this.statics
     })
+
+    this.execCallbacks('updateFocusDone')
   }
 
   updateList(direction) {
+    if (!this.datas || !this.datas.length) { return false }
     const upCondition = direction === this.vals.down && this.dataIdx % this.rows === 0
     const downCondition = (
       // direction is up && (not last page || last page)
@@ -147,12 +191,16 @@ export default class List {
   }
 
   execCallbacks(fnName) {
+    if (!this.datas || !this.datas.length) { return false }
+
     const callbacks = this.callbacks
     if (!callbacks) { return false }
     const fn = callbacks[fnName] || function() {}
 
     fn({
-      data: this.datas[this.currIdx]
+      data: this.datas[this.currIdx],
+      currIdx: this.currIdx,
+      oldIdx: this.oldIdx
     })
   }
 
@@ -169,14 +217,20 @@ export default class List {
   }
 
   up() {
+    if (!this.datas || !this.datas.length) { return false }
+
     if (this.direction === 'horizontal') {
       return false
     }
 
+    console.log(this.currIdx, this.datas.length % this.rows - 1, 'up 1')
     this.oldIdx = this.currIdx
+    const mod = this.datas.length % this.rows
     if (this.currIdx <= 0) {
       if (this.dataIdx <= 0) {
-        this.currIdx = this.datas.length % this.rows - 1
+        this.currIdx = (
+          mod === 0 ? this.datas.length - 1 : mod - 1
+        )
       } else {
         this.currIdx = this.rows - 1
       }
@@ -190,10 +244,13 @@ export default class List {
       this.dataIdx = this.datas.length - 1
     }
 
+    console.log(this.currIdx, 'up 2')
     this.idxChgHandler(this.vals.up)
   }
 
   down() {
+    if (!this.datas || !this.datas.length) { return false }
+
     if (this.direction === 'horizontal') {
       return false
     }
