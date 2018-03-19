@@ -223,7 +223,6 @@ export default class List {
       return false
     }
 
-    console.log(this.currIdx, this.datas.length % this.rows - 1, 'up 1')
     this.oldIdx = this.currIdx
     const mod = this.datas.length % this.rows
     if (this.currIdx <= 0) {
@@ -244,7 +243,6 @@ export default class List {
       this.dataIdx = this.datas.length - 1
     }
 
-    console.log(this.currIdx, 'up 2')
     this.idxChgHandler(this.vals.up)
   }
 
