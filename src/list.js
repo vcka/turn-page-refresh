@@ -55,7 +55,7 @@ export default class List {
     }
 
     this.vals = {
-      up: -1, down: 1
+      up: -1, down: 1, pup: -2, pdown: 2
     }
 
     this.init()
@@ -82,6 +82,10 @@ export default class List {
 
     this.execCallbacks('moveUpDown')
     this.execCallbacks('inited')
+  }
+
+  clear() {
+    this.clearTpl(this.statics)
   }
 
   getPages(type, target) {
@@ -167,25 +171,47 @@ export default class List {
 
   updateList(direction) {
     if (!this.datas || !this.datas.length) { return false }
-    const upCondition = direction === this.vals.down && this.dataIdx % this.rows === 0
+    const upCondition = (
+      (direction === this.vals.down && this.dataIdx % this.rows === 0) ||
+        (direction === this.vals.pdown)
+    )
     const downCondition = (
       // direction is up && (not last page || last page)
-      direction === this.vals.up && (
+      (direction === this.vals.up && (
         ((this.dataIdx + 1) % this.rows === 0) ||
-          this.dataIdx === this.datas.length - 1)
+          this.dataIdx === this.datas.length - 1)) ||
+        (direction === this.vals.pup)
     )
 
+    const mod = this.datas.length % this.rows
+    const total = this.datas.length
     if (upCondition || downCondition) {
       let datas = this.datas.slice(this.dataIdx, this.dataIdx + this.rows)
-      if (direction === this.vals.up) {
+      if (direction === this.vals.up || direction === this.vals.pup) {
         // from first page first row turn up to the last page last one
-        const rows = (
-          this.dataIdx === this.datas.length - 1 ?
-            this.datas.length % this.rows - 1: this.rows
+        let rows = (
+          (this.dataIdx === total - 1) ? mod - 1 : this.rows
         )
-        const start = this.dataIdx - rows
-        datas = this.datas.slice(start < 0 ? 0 : start, this.dataIdx + 1)
+
+        let start = this.dataIdx - rows, end = this.dataIdx + 1
+        start = start < 0 ? 0 : start
+
+        if (direction === this.vals.pup) {
+          rows = (
+            (this.dataIdx === total - mod) ? mod : this.rows
+          )
+
+          start = this.dataIdx - this.dataIdx % this.rows
+          end = this.dataIdx + rows
+        }
+
+        datas = this.datas.slice(start, end)
+      } else if (direction === this.vals.pdown) {
+        const start = this.dataIdx - this.dataIdx % this.rows
+        console.log(start, 'start')
+        datas = this.datas.slice(start < 0 ? 0 : start, start + this.rows)
       }
+
       this.updateRows(this.items, datas)
     }
   }
@@ -200,7 +226,8 @@ export default class List {
     fn({
       data: this.datas[this.currIdx],
       currIdx: this.currIdx,
-      oldIdx: this.oldIdx
+      oldIdx: this.oldIdx,
+      dataIdx: this.dataIdx
     })
   }
 
@@ -214,6 +241,69 @@ export default class List {
     this.getPages()
 
     this.execCallbacks('moveUpDown')
+  }
+
+  pageUp() {
+    if (!this.datas || !this.datas.length) { return false }
+
+    if (this.direction === 'horizontal') {
+      return false
+    }
+
+    const total = this.datas.length
+    if (total <= this.rows) { return false }
+
+    this.oldIdx = this.currIdx
+    const mod = this.datas.length % this.rows
+
+    this.dataIdx -= this.rows
+
+    if (this.dataIdx < 0) {
+      this.dataIdx = this.datas.length - mod
+      if (this.currIdx >= mod) {
+        this.currIdx = 0
+      } else {
+        this.dataIdx = this.dataIdx + this.currIdx
+      }
+    }
+
+    this.idxChgHandler(this.vals.pup)
+  }
+
+  pageDown() {
+    if (!this.datas || !this.datas.length) { return false }
+
+    if (this.direction === 'horizontal') {
+      return false
+    }
+
+    const total = this.datas.length
+    if (total <= this.rows) { return false }
+
+    this.oldIdx = this.currIdx
+    const mod = total % this.rows
+
+    // this.dataIdx += this.rows
+
+    if (this.dataIdx >= total - mod) {
+      this.currIdx = this.dataIdx = this.dataIdx % this.rows
+    } else {
+      this.dataIdx += this.rows
+    }
+
+    console.log(this.dataIdx, 'pageDown')
+
+    // 倒数第二页下翻页时，焦点变化
+    if (this.dataIdx >= total) {
+      if (this.currIdx > mod - 1) {
+        this.dataIdx = total - mod
+        this.currIdx = 0
+      } else {
+        this.dataIdx = total - mod + this.currIdx
+      }
+    }
+
+    this.idxChgHandler(this.vals.pdown)
   }
 
   up() {
@@ -284,9 +374,9 @@ export default class List {
     }
   }
 
-
   keyHandler(keycode) {
 
+    console.log(keycode)
     switch (keycode) {
     case this.keys.UP:
       this.up()
@@ -300,9 +390,11 @@ export default class List {
     case this.keys.RIGHT:
       this.right()
       break
+    case 73: // for test, i
     case this.keys.PAGE_UP:
       this.pageUp()
       break
+    case 79: // for test, o
     case this.keys.PAGE_DOWN:
       this.pageDown()
       break
@@ -312,5 +404,4 @@ export default class List {
     default: break
     }
   }
-
 }
