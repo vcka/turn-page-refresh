@@ -187,28 +187,32 @@ export default class List {
     const total = this.datas.length
     if (upCondition || downCondition) {
       let datas = this.datas.slice(this.dataIdx, this.dataIdx + this.rows)
-      if (direction === this.vals.up || direction === this.vals.pup) {
+      if (direction === this.vals.up) {
         // from first page first row turn up to the last page last one
         let rows = (
           (this.dataIdx === total - 1) ? mod - 1 : this.rows
         )
 
+        if (rows < 0) { rows = this.rows }
+
         let start = this.dataIdx - rows, end = this.dataIdx + 1
         start = start < 0 ? 0 : start
 
-        if (direction === this.vals.pup) {
-          rows = (
-            (this.dataIdx === total - mod) ? mod : this.rows
-          )
+        datas = this.datas.slice(start, end)
+      } else if (direction === this.vals.pup) {
+        // from first page first row turn up to the last page last one
+        let rows = (
+          (this.dataIdx === total - mod) ? mod : this.rows
+        )
 
-          start = this.dataIdx - this.dataIdx % this.rows
-          end = this.dataIdx + rows
-        }
+        if (rows <= 0) { rows = this.rows }
+
+        let start = this.dataIdx - this.dataIdx % this.rows
+        let end = this.dataIdx + rows
 
         datas = this.datas.slice(start, end)
       } else if (direction === this.vals.pdown) {
         const start = this.dataIdx - this.dataIdx % this.rows
-        console.log(start, 'start')
         datas = this.datas.slice(start < 0 ? 0 : start, start + this.rows)
       }
 
@@ -224,7 +228,7 @@ export default class List {
     const fn = callbacks[fnName] || function() {}
 
     fn({
-      data: this.datas[this.currIdx],
+      data: this.datas[this.dataIdx],
       currIdx: this.currIdx,
       oldIdx: this.oldIdx,
       dataIdx: this.dataIdx
@@ -259,7 +263,7 @@ export default class List {
     this.dataIdx -= this.rows
 
     if (this.dataIdx < 0) {
-      this.dataIdx = this.datas.length - mod
+      this.dataIdx = this.datas.length - (mod || this.rows)
       if (this.currIdx >= mod) {
         this.currIdx = 0
       } else {
@@ -291,11 +295,12 @@ export default class List {
       this.dataIdx += this.rows
     }
 
-    console.log(this.dataIdx, 'pageDown')
 
     // 倒数第二页下翻页时，焦点变化
     if (this.dataIdx >= total) {
-      if (this.currIdx > mod - 1) {
+      if (mod === 0) {
+        this.dataIdx = this.currIdx = 0
+      } else if (this.currIdx > mod - 1) {
         this.dataIdx = total - mod
         this.currIdx = 0
       } else {
@@ -318,7 +323,7 @@ export default class List {
     if (this.currIdx <= 0) {
       if (this.dataIdx <= 0) {
         this.currIdx = (
-          mod === 0 ? this.datas.length - 1 : mod - 1
+          mod === 0 ? this.rows - 1 : mod - 1
         )
       } else {
         this.currIdx = this.rows - 1
@@ -376,7 +381,6 @@ export default class List {
 
   keyHandler(keycode) {
 
-    console.log(keycode)
     switch (keycode) {
     case this.keys.UP:
       this.up()
