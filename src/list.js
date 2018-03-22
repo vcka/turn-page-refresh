@@ -190,15 +190,16 @@ export default class List {
       if (direction === this.vals.up) {
         // from first page first row turn up to the last page last one
         let rows = (
-          (this.dataIdx === total - 1) ? mod - 1 : this.rows
+          (this.dataIdx === total - 1) ? (mod || this.rows) : this.rows
         )
 
-        if (rows < 0) { rows = this.rows }
+        // if (rows <= 0) { rows = this.rows }
 
-        let start = this.dataIdx - rows, end = this.dataIdx + 1
+        let start = this.dataIdx - rows + 1, end = this.dataIdx + 1
         start = start < 0 ? 0 : start
 
         datas = this.datas.slice(start, end)
+        console.log(datas, this.dataIdx, total, rows, start, end, 'up 2')
       } else if (direction === this.vals.pup) {
         // from first page first row turn up to the last page last one
         let rows = (
@@ -338,6 +339,7 @@ export default class List {
       this.dataIdx = this.datas.length - 1
     }
 
+    console.log(this.dataIdx, this.currIdx, mod, 'up')
     this.idxChgHandler(this.vals.up)
   }
 
