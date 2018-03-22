@@ -199,7 +199,6 @@ export default class List {
         start = start < 0 ? 0 : start
 
         datas = this.datas.slice(start, end)
-        console.log(datas, this.dataIdx, total, rows, start, end, 'up 2')
       } else if (direction === this.vals.pup) {
         // from first page first row turn up to the last page last one
         let rows = (
@@ -339,7 +338,6 @@ export default class List {
       this.dataIdx = this.datas.length - 1
     }
 
-    console.log(this.dataIdx, this.currIdx, mod, 'up')
     this.idxChgHandler(this.vals.up)
   }
 
