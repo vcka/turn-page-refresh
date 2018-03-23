@@ -235,6 +235,7 @@ export default class List {
     if (num > this.datas.length || num <= 0) {
       return false
     }
+    this.blur()
     this.dataIdx = num - 1
     this.currIdx = this.dataIdx % this.rows
 
