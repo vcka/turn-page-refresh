@@ -136,6 +136,9 @@
       callbacks: {
         moveUpDown: function(opts) {
           console.log([].slice.call(arguments)[0], 'moveUpDown')
+        },
+        inputingNumber(opts) {
+          console.log(opts.inputNums, 'inputingNumber')
         }
       },
 

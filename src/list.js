@@ -49,13 +49,15 @@ export default class List {
     this._focus = opts.focus
     this._blur = opts.blur
     this.noInitFocus = opts.noInitFocus
+    this.inputNums = []
+    this.inputTimer = null
     this.keys = {
       UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
       PAGE_UP: 33, PAGE_DOWN: 34, OK: 13, BACK: 8
     }
 
     this.vals = {
-      up: -1, down: 1, pup: -2, pdown: 2
+      up: -1, down: 1, pup: -2, pdown: 2, jump: 3
     }
 
     this.init()
@@ -185,7 +187,7 @@ export default class List {
 
     const mod = this.datas.length % this.rows
     const total = this.datas.length
-    if (upCondition || downCondition) {
+    if (upCondition || downCondition || direction === this.vals.jump) {
       let datas = this.datas.slice(this.dataIdx, this.dataIdx + this.rows)
       if (direction === this.vals.up) {
         // from first page first row turn up to the last page last one
@@ -211,12 +213,58 @@ export default class List {
         let end = this.dataIdx + rows
 
         datas = this.datas.slice(start, end)
-      } else if (direction === this.vals.pdown) {
+      } else if (direction === this.vals.pdown || direction === this.vals.jump) {
         const start = this.dataIdx - this.dataIdx % this.rows
         datas = this.datas.slice(start < 0 ? 0 : start, start + this.rows)
       }
 
       this.updateRows(this.items, datas)
+    }
+  }
+
+  jump(num) {
+
+    let numStr = this.inputNums.join('')
+    if (numStr) {
+      numStr = numStr.replace(/^0+/, '')
+    }
+
+    // 跳转后清空频道数字
+    this.inputNums = []
+
+    if (num > this.datas.length || num <= 0) {
+      return false
+    }
+    this.dataIdx = num - 1
+    this.currIdx = this.dataIdx % this.rows
+
+    this.idxChgHandler(this.vals.jump)
+  }
+
+  inputNum(num) {
+    if (typeof(num) !== 'number' || (num < 0 || num > 9)) {
+      return
+    }
+
+    // 缓存输入的数字
+    this.inputNums.push(num)
+    let nums = this.inputNums
+    // 频道号数字
+    let channelNum = parseInt(nums.join(''), 10)
+    this.execCallbacks('inputingNumber')
+    clearTimeout(this.inputTimer)
+    this.inputTimer = setTimeout(() => {
+      clearTimeout(this.jumpTimer)
+      this.jump(channelNum)
+    }, 2000)
+
+    if (this.inputNums.length >= 3) {
+      clearTimeout(this.inputTimer)
+      clearTimeout(this.jumpTimer)
+      this.jumpTimer = setTimeout(() => {
+        this.jump(channelNum)
+      }, 800)
+      return
     }
   }
 
@@ -231,7 +279,8 @@ export default class List {
       data: this.datas[this.dataIdx],
       currIdx: this.currIdx,
       oldIdx: this.oldIdx,
-      dataIdx: this.dataIdx
+      dataIdx: this.dataIdx,
+      inputNums: this.inputNums
     })
   }
 
@@ -381,6 +430,11 @@ export default class List {
 
   keyHandler(keycode) {
 
+    // 数字键
+    if (keycode >= 48 && keycode <= 57) {
+      this.inputNum(keycode - 48)
+      return false
+    }
     switch (keycode) {
     case this.keys.UP:
       this.up()
