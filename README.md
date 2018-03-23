@@ -69,7 +69,20 @@ For example:
 
 `callbacks.moveUpDown` used to listen the focus changing, and to do something(Such as, request the datas of second column list)
 
-`updateFocus`, *required*, to update the current and old row's focus class and content, for example: 
+## listen key handler
+
+proxy the key handler into the `list.keyHandler`
+
+
+```
+window.onkeydown = event => {
+  list.keyHandler(event.keyCode || event.which)
+}
+```
+
+# Functions
+
+## `updateFocus`, *required*, to update the current and old row's focus class and content, for example: 
 
 ```
 updateFocus: function(opts) {
@@ -92,7 +105,7 @@ updateFocus: function(opts) {
 }
 ```
 
-`updateTpl`, *required*, to update the content of list(only for the list item template), for example:
+## `updateTpl`, *required*, to update the content of list(only for the list item template), for example:
 
 ```
 updateTpl: function(statics, index, data) {
@@ -106,7 +119,7 @@ updateTpl: function(statics, index, data) {
 }
 ```
 
-`clearTpl`, *required*, clear the list content
+## `clearTpl`, *required*, clear the list content
 
 ```
 clearTpl: function(statics) {
@@ -125,13 +138,64 @@ clearTpl: function(statics) {
 }
 ```
 
-## listen key handler
 
-proxy the key handler into the `list.keyHandler`
+# callbacks
 
+Execute callbacks by `execCallbacks(fnName)`
 
 ```
-window.onkeydown = event => {
-  list.keyHandler(event.keyCode || event.which)
+execCallbacks(fnName) {
+  if (!this.datas || !this.datas.length) { return false }
+
+  const callbacks = this.callbacks
+  if (!callbacks) { return false }
+  const fn = callbacks[fnName] || function() {}
+
+  fn({
+    data: this.datas[this.dataIdx],
+    currIdx: this.currIdx,
+    oldIdx: this.oldIdx,
+    dataIdx: this.dataIdx,
+    inputNums: this.inputNums
+  })
 }
 ```
+
+All supported callbacks as below:
+
+## `inited`
+
+this `inited` callback will called after the `Turn.List` created and inited, the `constructor` function executed.
+
+In `inited`, you can do something for the first enter page and other you need.
+
+## `moveUpDown`
+
+The movement of the list by key-up(38) and key-down(40).
+
+The key-up/down(38/40) key event will trigger `moveUpDown` callback, you can do things like updating row styles, update row content, request the second list datas, and so on.
+
+列表行焦点移动时触发的回调，在这个里面你可以实时的更新当前行的焦点及其样式，甚至可以去请求第二列的数据（如果有的话）
+
+## `updateRowsDone`
+
+This will be triggered by the list's content updated, the several scenes as follow:
+
+该回调在列表数据刷新的时候出发，刷新列表出发环境有以下几种：
+
+1. 上键到头翻页(key up to end)。
+2. 下键到头翻页(key down to end)。
+3. 上下页键翻页(key pageup, pagedown)。
+4. 数字键切台(number keys to switch channel)。
+
+## `updateFocusDone`
+
+This will be triggered by the current row focused.
+
+该回调会在列表当前行获得焦点并设置完样式之后触发。
+
+## `inputingNumber`
+
+The callback when inputing number between zero up to nine, and it will log these numbers into `this.inputNums = []` defined in `Turn.List`.
+
+数字输入事件的回调，会实时记录已经输入的数字，在 2 s 之后会触发切台，超出列表范围不做任何操作。
