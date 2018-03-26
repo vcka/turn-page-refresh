@@ -449,11 +449,11 @@ export default class List {
     case this.keys.RIGHT:
       this.right()
       break
-    case 73: // for test, i
+    // case 73: // for test, i
     case this.keys.PAGE_UP:
       this.pageUp()
       break
-    case 79: // for test, o
+    // case 79: // for test, o
     case this.keys.PAGE_DOWN:
       this.pageDown()
       break

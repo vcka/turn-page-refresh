@@ -1,4 +1,7 @@
 # turn-page-refresh
+
+使用在机顶盒上的列表控制器，可实现通过上下键，上下页键，数字键来控制列表的行为，该插件仅包含控制逻辑部分，至于列表的UI刷新，更新以及渲染部分同意由传入的回调函数来完成，即所有UI相关的部分均由外部使用者来控制，该插件只负责操控列表的行为。
+
 turn page refresh datas, used on STB(Set Top Box), compatible for all inner-browser of STB.
 
 You can provide a list includes more items, `turn-page-refresh` will control it with key handler.
