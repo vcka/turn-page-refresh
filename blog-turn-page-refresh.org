@@ -1,0 +1,444 @@
+#+STARTUP: indent
+#+AUTHOR: ZhiCheng Lee
+#+TITLE: The Driver Of List
+#+EMAIL: gccll.love@gmail.com
+#+KEYWORDS: IPTV EPG JavaScript
+#+OPTIONS: H:4 toc:t
+
+* 前言
+
+苦逼的程序猿，尤其苦逼的 IPTV 行业程序猿，作为程序猿一枚，除了写代码，应对各种需要，还要应对
+现场各种销售运营们，甚至平台，运营商的絮絮叨叨。
+
+今天又是要通宵的一晚，也是自己作死生产了个小错误导致升级失败。
+
+老板：嗯（若有所思...），以后升级统统放到凌晨 4 点你们晚上就好好准备升级事宜吧！！！
+
+此处省略若干不雅词汇.....
+
+EPG 的重构总算告一段落了，后续几个省份会陆续上线重构后的新 EPG，还是有些许哈皮期待的，毕竟经过自己
+各种加班加点，各种挤时间，自己一行一行敲下来的。
+
+由于兼容性的问题，自己也不得不去自己实现一些简单的通用功能，对自己也算是一种提升吧（虽然比较简单，比较菜）
+
+* Turn-Page-Refresh
+
+之所以命名成这个，主要这个插件的功能就是用来控制列表或菜单的内容更新的，而针对列表是一页一页的显示的因此命名
+成了： =turn-page-refresh=
+
+它的使用场景主要是在 =IPTV= 机顶盒上面，因为干运营商这块，厂家太多了真的不敢用网上的一些插件，保不定里面使用
+的一些新功能导致任意一款盒子跑不起来，这锅可背不起来(陕西就因为这个，27款盒子其中一款有5万用户的华为老款盒子跑步起来)，
+最后商务部协商 =KO= 这款盒子(可运气不总是这么好...))。
+
+这插件支持的功能主要有如下：
+
+1. 上下键(=38/40=) 移动焦点，到头到尾翻页
+2. 上下页键(=33/34=) 翻页或移动焦点
+3. 数字键定位列表项
+
+实现起来并没有什么难点，主要需要考虑的情况比较多
+
+先说说怎么使用吧
+
+但是该插件遵循一个原则，即其内部不处理任何与 =DOM= 相关的逻辑，所有与 =DOM= 相关的处理都在创建
+实例的时候由提供的回调来完成。
+
+* Build
+
+=git clone https://github.com/gcclll/turn-page-refresh.git=
+
+如果要在线测试可以运行：
+
+=npm run dev:iife=
+
+另外还有其他一些命令可供使用，主要不同在于打包之后的引入方式：
+
+1. commonjs: =npm run dev:cjs=
+
+2. es6 import: =npm run dev:esm=
+
+3. umd: =npm run dev:umd=
+
+如果用于生产环境：
+
+- build: =npm run build=
+
+然后 =dist/= 下面会生产如下文件，根据实际情况选择使用:
+
+#+BEGIN_EXAMPLE
+  dist/turn.cjs.js 12.80kb
+  dist/turn.esm.js 12.78kb
+  dist/turn.umd.js 13.03kb
+  dist/turn.iife.js 12.82kb
+  dist/turn.cjs.min.js 8.06kb (gzipped: 2.26kb)
+  dist/turn.esm.min.js 0.09kb (gzipped: 0.10kb)
+  dist/turn.umd.min.js 7.74kb (gzipped: 2.17kb)
+  dist/turn.iife.min.js 7.60kb (gzipped: 2.11kb)
+#+END_EXAMPLE
+
+=turn.esm.min.js= 压缩有点问题，目前还没解决，可以用 =turn.esm.js= 先顶着，作为外部文件引入最后项目
+打包也会压缩代码。
+
+* Usage
+
+import or script
+
+#+BEGIN_SRC html
+  <script src="./dist/turn.iife.js"></script>
+#+END_SRC
+
+** create `turn.List` instance
+
+ #+BEGIN_SRC js
+   const list = new List({
+     statics: {
+       nos: document.querySelectorAll('.tvod-list-item-no'),
+       cnames: document.querySelectorAll('.tvod-list-item-name'),
+       icons: document.querySelectorAll('.tvod-list-item-icon img'),
+       items: [].slice.call(document.querySelectorAll('ul li'))
+     },
+     datas: clist,
+     callbacks: {
+       moveUpDown: function(opts) {
+         console.log([].slice.call(arguments)[0], 'moveUpDown')
+       }
+     },
+
+     updateFocus: function(opts) {
+       // the callback for focus changed by up/down/left/right key
+     },
+
+     updateTpl: function(statics, index, data) {
+       // update the template
+       // template in the every item of the list
+     },
+
+     clearTpl: function(statics) {
+       // clear the list content
+     }
+   })
+ #+END_SRC
+
+实例化之后有些回调函数是必须的
+
+For example:
+
+=callbacks.moveUpDown=
+
+用来监听列表焦点上下移动的回调
+
+** listen key handler
+
+生成实例之后，需要将 =turn= 内部的按键处理 =list.keyHandler= 设置响应
+
+#+BEGIN_SRC js
+window.onkeydown = event => {
+  list.keyHandler(event.keyCode || event.which)
+}
+#+END_SRC
+
+* Functions
+
+主要使用到的回调函数
+
+** =updateFocus=, *required*
+
+用来更新新旧行的样式和内容
+
+#+BEGIN_SRC js
+  updateFocus: function(opts) {
+    if (!opts) { return false }
+    const newIcon = opts.statics.icons[opts.newIdx]
+    if (opts.newIdx !== opts.oldIdx) {
+      const oldIcon = opts.statics.icons[opts.oldIdx]
+      if (oldIcon) {
+        oldIcon.src = './assets/images/icon_tvod_22x22.png'
+        oldIcon.style.width = '22px'
+        oldIcon.style.height = '22px'
+      }
+    }
+
+    if (newIcon) {
+      newIcon.src = './assets/images/icon_tvod_26x26.png'
+      newIcon.style.width = '26px'
+      newIcon.style.height = '26px'
+    }
+  }
+#+END_SRC
+
+** =updateTpl=, *required*
+
+用来更新列表行内容的模版，即列表中的行中有多少元素，在更新焦点的时候需要更新哪些东西，就在这里面定义
+
+#+BEGIN_SRC js
+updateTpl: function(statics, index, data) {
+  if (!statics || !data) { return false }
+  const no = statics.nos && statics.nos[index]
+  const name = statics.cnames && statics.cnames[index]
+  const icon = statics.icons && statics.icons[index]
+  no && (no.innerHTML = fillZero(data.ChannelNumber))
+  name && (name.innerHTML = data.ChannelName)
+  icon && (icon.style.visibility = 'visible')
+}
+#+END_SRC
+
+这个函数会有三个参数
+
+1. =statics=
+
+   第一个也是 =new= 的时候传递进去的 =DOM= 元素缓存集合, 其中的属性值都是在DOM创建完成之后缓存进去的，避免后续频繁操作DOM的时候去重新获取元素。
+
+2. =index=
+
+   当前行的索引值，可以根据这个去获取当前行对应的一些数据。
+
+3. =data=
+
+   当前行对应的数据。
+
+=turn= 里面会根据提供的这个模版更新函数，去更新新旧行的样式或内容
+
+** =clearTpl=, *required*, clear the list content
+
+清空列表内容，在翻页更新列表内容时调用。
+
+#+BEGIN_SRC js
+clearTpl: function(statics) {
+  if (!statics) {
+    return false
+  }
+
+  for (let i = 0; i < statics.items.length; i++) {
+    const no = statics.nos[i]
+    const name = statics.cnames[i]
+    const icon = statics.icons[i]
+    no.innerHTML = ''
+    name.innerHTML = ''
+    icon.style.visibility = 'hidden'
+  }
+}
+#+END_SRC
+
+* callbacks
+
+回调函数。
+
+=turn= 内部通过 =execCallbacks(fnName)= 去执行的回调函数，也就是说每个回调函数的参数都是一样的。
+
+#+BEGIN_SRC js
+execCallbacks(fnName) {
+  if (!this.datas || !this.datas.length) { return false }
+
+  const callbacks = this.callbacks
+  if (!callbacks) { return false }
+  const fn = callbacks[fnName] || function() {}
+
+  fn({
+    data: this.datas[this.dataIdx],
+    currIdx: this.currIdx,
+    oldIdx: this.oldIdx,
+    dataIdx: this.dataIdx,
+    inputNums: this.inputNums
+  })
+}
+#+END_SRC
+
+All supported callbacks as below:
+
+** =inited=
+
+初始化函数，在 =Turn.List= 实例化成功之后调用
+
+** =moveUpDown=
+
+The movement of the list by key-up(38) and key-down(40).
+
+The key-up/down(38/40) key event will trigger =moveUpDown= callback, you can do things like
+updating row styles, update row content, request the second list datas, and so on.
+
+列表行焦点移动时触发的回调，在这个里面你可以实时的更新当前行的焦点及其样式，甚至可以去请求第二列的数据（如果有的话）
+
+** =updateRowsDone=
+
+This will be triggered by the list's content updated, the several scenes as follow:
+
+该回调在列表数据刷新的时候出发，刷新列表出发环境有以下几种：
+
+1. 上键到头翻页(key up to end)。
+2. 下键到头翻页(key down to end)。
+3. 上下页键翻页(key pageup, pagedown)。
+4. 数字键切台(number keys to switch channel)。
+
+** =updateFocusDone=
+
+This will be triggered by the current row focused.
+
+该回调会在列表当前行获得焦点并设置完样式之后触发。
+
+** =inputingNumber=
+
+The callback when inputing number between zero up to nine, and it will log these numbers into `this.inputNums = []` defined in `Turn.List`.
+
+数字输入事件的回调，会实时记录已经输入的数字，在 2 s 之后会触发切台，超出列表范围不做任何操作。
+* Code
+
+核心代码部分
+
+** updateRows
+
+#+BEGIN_SRC js
+  updateRows(items, datas) {
+    items = items || this.items
+
+    if (!items || !items.length) {
+      // throw new Error('[Turn/List] update rows failed, no items.')
+      return false
+    }
+
+    if (!datas || !datas.length) {
+      // throw new Error('[Turn/List] update rows failed, no datas.')
+      return false
+    }
+
+    this.clearTpl(this.statics)
+
+    // 遍历所有列表项，更新行内容
+    for (let i = 0; i < this.rows; i++) {
+      if (this.updateTpl && this.items[i] && datas[i]) {
+        this.updateTpl(this.statics, i, datas[i])
+      }
+    }
+
+    this.execCallbacks('updateRowsDone')
+  }
+#+END_SRC
+
+** updateFocus
+
+#+BEGIN_SRC js
+  updateFocus() {
+    if (!this.datas || !this.datas.length) { return false }
+    const newEl = this.items[this.currIdx]
+    const oldEl = this.items[this.oldIdx]
+
+    if (this.currIdx !== this.oldIdx) {
+      cls.remove(oldEl, 'focus')
+    }
+
+    if (!this.noInitFocus) {
+      cls.add(newEl, 'focus')
+    } else {
+      this.noInitFocus = false
+    }
+
+    this._updateFocus && this._updateFocus({
+      newIdx: this.currIdx, oldIdx: this.oldIdx, statics: this.statics
+    })
+
+    this.execCallbacks('updateFocusDone')
+  }
+#+END_SRC
+
+先调用 =cls= 去更新焦点样式 =focus= , 后面执行的时外部提供的更新焦点回调(如果有的话)
+
+** udpateList
+
+更新列表的核心部分
+
+#+BEGIN_SRC js
+  updateList(direction) {
+    if (!this.datas || !this.datas.length) { return false }
+    const upCondition = (
+      (direction === this.vals.down && this.dataIdx % this.rows === 0) ||
+        (direction === this.vals.pdown)
+    )
+    const downCondition = (
+      // direction is up && (not last page || last page)
+      (direction === this.vals.up && (
+        ((this.dataIdx + 1) % this.rows === 0) ||
+          this.dataIdx === this.datas.length - 1)) ||
+        (direction === this.vals.pup)
+    )
+
+    const mod = this.datas.length % this.rows
+    const total = this.datas.length
+    // 上下达到翻页条件，或者数字键，更新列表内容
+    if (upCondition || downCondition || direction === this.vals.jump) {
+      let datas = this.datas.slice(this.dataIdx, this.dataIdx + this.rows)
+      if (direction === this.vals.up) {
+        // 这里的 rows 需要考虑到从第一页翻页到最后一页的时候，数据索引问题
+        // from first page first row turn up to the last page last one
+        let rows = (
+          (this.dataIdx === total - 1) ? (mod || this.rows) : this.rows
+        )
+
+        // if (rows <= 0) { rows = this.rows }
+
+        let start = this.dataIdx - rows + 1, end = this.dataIdx + 1
+        start = start < 0 ? 0 : start
+
+        // 取出需要更新的数据
+        datas = this.datas.slice(start, end)
+      } else if (direction === this.vals.pup) {
+        // from first page first row turn up to the last page last one
+        let rows = (
+          (this.dataIdx === total - mod) ? mod : this.rows
+        )
+
+        if (rows <= 0) { rows = this.rows }
+
+        let start = this.dataIdx - this.dataIdx % this.rows
+        let end = this.dataIdx + rows
+
+        datas = this.datas.slice(start, end)
+      } else if (direction === this.vals.pdown || direction === this.vals.jump) {
+        const start = this.dataIdx - this.dataIdx % this.rows
+        datas = this.datas.slice(start < 0 ? 0 : start, start + this.rows)
+      }
+
+      this.updateRows(this.items, datas)
+    }
+  }
+#+END_SRC
+
+** inputNum
+
+数字输入处理
+
+#+BEGIN_SRC js
+  inputNum(num) {
+    if (typeof(num) !== 'number' || (num < 0 || num > 9)) {
+      return
+    }
+
+    // 缓存输入的数字
+    this.inputNums.push(num)
+    let nums = this.inputNums
+    // 频道号数字
+    let channelNum = parseInt(nums.join(''), 10)
+    this.execCallbacks('inputingNumber')
+    clearTimeout(this.inputTimer)
+    this.inputTimer = setTimeout(() => {
+      clearTimeout(this.jumpTimer)
+      this.jump(channelNum)
+    }, 2000)
+
+    if (this.inputNums.length >= 3) {
+      clearTimeout(this.inputTimer)
+      clearTimeout(this.jumpTimer)
+      this.jumpTimer = setTimeout(() => {
+        this.jump(channelNum)
+      }, 800)
+      return
+    }
+  }
+#+END_SRC
+
+* 总结
+
+由于公司项目性质的原因，会有大量使用列表或菜单地方，之前是采用 =offsetLeft/Top= 和 =left/top= 来控制
+菜单的滚动，但是这个在按键太快的时候有些盒子上表现会有点问题，最后只能通过给按键加上延时来处理，规避这个问题。
+
+采用滚动方式的插件地址： https://github.com/gcclll/scroll-driver.git
+
+加上盒子上对动画的需求不是很强烈，因此会考虑使用这种刷新数据方式来搞。
