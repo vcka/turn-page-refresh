@@ -132,6 +132,7 @@
         icons: document.querySelectorAll('.tvod-list-item-icon img'),
         items: [].slice.call(document.querySelectorAll('ul li'))
       },
+      cachedDataIdx: 20,
       datas: clist,
       callbacks: {
         moveUpDown: function(opts) {

@@ -38,7 +38,14 @@ export default class List {
     this.callbacks = opts.callbacks
     this.direction = opts.direction || 'vertical'
     this.dataIdx = 0
-    this.dataLen = this.items.length
+    this.dataLen = this.datas.length
+    if (typeof(opts.cachedDataIdx) === 'string') {
+      opts.cachedDataIdx = parseInt(opts.cachedDataIdx, 10)
+    }
+    this.cachedDataIdx = (
+      opts.cachedDataIdx > this.dataLen - 1 || opts.cachedDataIdx < 0
+    ) ? 0 : (opts.cachedDataIdx || 0)
+    this.dataIdx = this.cachedDataIdx || 0
     // the current row's index()
     this.currIdx = 0
     this.oldIdx = 0
@@ -73,7 +80,13 @@ export default class List {
 
   init() {
     if (!this.datas || !this.datas.length) { return false }
-    const datas = this.datas.slice(this.dataIdx, this.dataIdx + this.rows)
+    let start = 0
+    if (this.dataIdx > 0) {
+      const mod = this.dataIdx % this.rows
+      start = this.dataIdx - mod
+      this.currIdx = mod
+    }
+    const datas = this.datas.slice(start, this.dataIdx + this.rows)
 
     if (!datas || !datas.length) {
       throw new Error('[Turn/List] init failed, no datas')
