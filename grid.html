@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="page-view-size" content="1280*720">
+    <title>Magic</title>
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    div {
+      width: 1280px;
+      height: 720px;
+      background-color: black;
+    }
+
+    span {
+      display: inline-block;
+      width: 306px;
+      height: 130px;
+      line-height: 130px;
+      margin: 5px;
+      color: #fff;
+      font-size: 32px;
+      text-align: center;
+      background-color: green;
+    }
+
+    .focus {
+
+    }
+
+    .line {
+      width: 32px;
+      height: 2px;
+      background-color: #fff;
+    }
+
+    .focus:after {
+      display: inline-block;
+      margin-left: -65px;
+      margin-bottom: -25px;
+      content: '';
+      width: 65px;
+      height: 4px;
+      background-color: #fff;
+    }
+
+    </style>
+  </head>
+  <body>
+    <div id="wrap">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <script src="./src/gridDatas.js"></script>
+    <script src="./dist/turn.iife.js"></script>
+    <script>
+
+    const spans = document.querySelectorAll('#wrap span')
+    for (let i = 0; i < 20; i++) {
+      spans[i].innerHTML = gridDatas[i].CityName
+    }
+
+
+    function fillZero(n) {
+      let m = ('' + n).split('')
+
+      return new Array(3 - m.length + 1).join('0') + n
+    }
+    const Grid = turn.Grid
+    const grid = new Grid({
+      statics: {
+        items: [].slice.call(document.querySelectorAll('#wrap span'))
+      },
+      rows: 5, columns: 4, // 5 x 4
+      cachedDataIdx: 20,
+      datas: gridDatas,
+      callbacks: {
+        updateFocusDone(opts) {
+
+          console.log(opts, 'updateFocusDone')
+        }
+      },
+
+      updateFocus: function(opts) {
+        console.log(opts, 'updateFocus')
+      },
+
+      updateTpl: function(statics, index, data) {
+        if (!statics || !data) { return false }
+        const city = statics.items && statics.items[index]
+        city.innerHTML = data.CityName
+      },
+
+      clearTpl: function(statics) {
+        if (!statics) {
+          return false
+        }
+
+        for (let i = 0; i < statics.items.length; i++) {
+          const item = statics.items[i]
+          item.innerHTML = ''
+        }
+      }
+    })
+
+    window.onkeydown = event => {
+      
+      grid.keyHandler(event.keyCode || event.which)
+    }
+    </script>
+  </body>
+</html>
