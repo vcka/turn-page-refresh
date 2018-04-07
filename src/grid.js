@@ -129,6 +129,8 @@ export default class Grid {
       // the first column
       this.side = this.vals.left
       this.corner = ''
+    } else {
+      this.corner = this.side = ''
     }
 
     this.isLastRow = false
