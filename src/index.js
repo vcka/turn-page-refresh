@@ -1,7 +1,7 @@
-// import List from './list'
+import List from './list'
 import Grid from './grid'
 
 export default {
-  // List
+  List,
   Grid
 }

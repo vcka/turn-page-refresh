@@ -50,9 +50,34 @@
       background-color: #fff;
     }
 
+    .ref {
+      position: relative;
+      width: 100%;
+      height: 1px;
+    }
+
+    .left-line {
+      left: 2px;
+    }
+
+    .right-line {
+      right: 2px;
+    }
+
+    .line {
+      position: absolute;
+      width: 10px;
+      height: 720px;
+      background-color: red;
+    }
+
     </style>
   </head>
   <body>
+    <div class="ref">
+      <div class="line left-line"></div>
+      <div class="line right-line"></div>
+    </div>
     <div id="wrap">
       <span></span>
       <span></span>
@@ -84,6 +109,10 @@
       spans[i].innerHTML = gridDatas[i].CityName
     }
 
+    const [
+      lFuzzy, rFuzzy
+    ] = [].slice.call(document.querySelectorAll('.line'))
+
 
     function fillZero(n) {
       let m = ('' + n).split('')
@@ -100,13 +129,21 @@
       datas: gridDatas,
       callbacks: {
         updateFocusDone(opts) {
+        },
 
-          console.log(opts, 'updateFocusDone')
+        turnPage(opts) {
+          console.log(opts, 'turnpage')
+          if (opts.turnDirection === 'right') {
+            rFuzzy.style.visibility = 'hidden'
+            lFuzzy.style.visibility = 'visible'
+          } else if (opts.turnDirection === 'left') {
+            rFuzzy.style.visibility = 'visible'
+            lFuzzy.style.visibility = 'hidden'
+          }
         }
       },
 
       updateFocus: function(opts) {
-        console.log(opts, 'updateFocus')
       },
 
       updateTpl: function(statics, index, data) {

@@ -4,6 +4,7 @@ export default class Grid {
 
   constructor(opts) {
 
+    this.callbacks = opts.callbacks
     this.statics = opts.statics
     this.items = opts.statics.items
     this.datas = opts.datas
@@ -13,6 +14,11 @@ export default class Grid {
     this.oldColumn = 0
     this.currRow = 0
     this.currColumn = 0
+    this.total = this.rows * this.columns
+    this.dataIdx = 0
+    this.currPage = 0
+    this.totalPage = Math.ceil(this.datas.length / this.total)
+    this.isLastRow = false
 
     // fns outer
     this._updateFocus = opts.updateFocus
@@ -23,14 +29,31 @@ export default class Grid {
     }
 
     this.vals = {
-      up: -1, down: 1, left: -2, right: 2,
-      pup: -3, pdown: 3, jump: 4
+      up: 'up', down: 'down', left: 'left', right: 'right',
+      pup: 'page-up', pdown: 'page-down', jump: 'jump',
+      lucorner: 'left-up-corner',
+      ldcorner: 'left-down-corner',
+      rucorner: 'right-up-corner',
+      rdcorner: 'right-down-corner'
+    }
+    this.side = ''
+    this.corner = this.vals.lucorner
+    this.turnDirection = this.vals.left // left, right, up, down
+
+    this.updateTpl = opts.updateTpl
+    if (!this.updateTpl) {
+      throw new Error('[Turn/List] the update template function required.')
+    }
+
+    this.clearTpl = opts.clearTpl
+    if (!this.clearTpl) {
+      throw new Error('[Turn/List] the clear template function required.')
     }
 
     this.init()
   }
 
-  init() {
+  init(data) {
     if (!this.datas || !this.datas.length) { return false }
     // let start = 0
     if (this.dataIdx > 0) {
@@ -44,10 +67,24 @@ export default class Grid {
     // throw new Error('[Turn/Grid] init failed, no datas')
     // }
 
+    let _data = data || this.datas.slice(0, this.total)
+    if (data) {
+      this.updateContent(_data)
+    }
     this.updateFocus()
-
     this.execCallbacks('moveUpDown')
     this.execCallbacks('inited')
+  }
+
+  updateContent(data) {
+
+    this.clearTpl(this.statics)
+
+    for (let i = 0; i < this.total; i++) {
+      if (this.updateTpl && this.items[i] && data[i]) {
+        this.updateTpl(this.statics, i, data[i])
+      }
+    }
   }
 
   clear() {}
@@ -61,35 +98,48 @@ export default class Grid {
   touchEdge() {
     if (this.currRow === 0 && this.currColumn === 0) {
       // the left-up corner
-      console.log('->>>>>>> left-up corder')
+      this.side = ''
+      this.corner = this.vals.lucorner
     } else if (this.currRow == 0 && this.currColumn === this.columns - 1) {
       // the right-up corner
-      console.log('->>>>>>> right-up corder')
+      this.side = ''
+      this.corner = this.vals.rucorner
     } else if (this.currRow === this.rows - 1 && this.currColumn === 0) {
       // the left-down corner
-      console.log('->>>>>>> left-down corder')
+      this.side = ''
+      this.corner = this.vals.ldcorner
     } else if (this.currRow === this.rows - 1 && this.currColumn === this.columns - 1) {
       // the right-down corner
-      console.log('->>>>>>> right-down corder')
+      this.side = ''
+      this.corner = this.vals.rucorner
     } else if (this.rows - 1 === this.currRow) {
       // the last row
-      console.log('->>>>>>> down edge')
+      this.side = this.vals.down
+      this.corner = ''
     } else if (this.currRow === 0) {
       // the first row
-      console.log('->>>>>>> up edge')
+      this.side = this.vals.up
+      this.corner = ''
     } else if (this.currColumn === this.columns - 1) {
       // the last column
-
-      console.log('->>>>>>> right edge')
+      this.side = this.vals.right
+      this.corner = ''
     } else if (this.currColumn === 0) {
       // the first column
-      console.log('->>>>>>> left edge')
-    } else if (this.dataIdx === this.datas.length - 1) {
-      // the last one
-      console.log('->>>>>>> last one')
-    } else if (this.dataIdx === 0) {
-      console.log('->>>>>>> first one')
+      this.side = this.vals.left
+      this.corner = ''
     }
+
+    this.isLastRow = false
+    if (
+      // this.dataIdx === this.datas.length - 1
+      this.dataIdx >= this.datas.length - this.columns
+    ) {
+      // the last row
+      this.isLastRow = true
+    }
+
+    this.execCallbacks('touchEdge')
   }
 
   updateDataIdx() {
@@ -123,22 +173,82 @@ export default class Grid {
     this.execCallbacks('updateFocusDone')
   }
 
-
   blur() {}
 
-  pageUp() {}
+  turn(direction) {
+    const oldDataIdx = this.dataIdx
+    let start = 0
+    let data = null
+    this.turnDirection = direction
+    this.idxChgHandler()
+    if (this.turnDirection === this.vals.left) {
+      // to turn left page
+      start = (this.currPage - 1) * this.total
+      start = start <= 0 ? 0 : start
+      this.dataIdx = start
+      if (this.dataIdx < 0 || this.currPage <= 0) {
+        this.dataIdx = oldDataIdx
+        return false
+      }
 
-  pageDown() {}
+      this.currPage--
+
+    } else if (this.turnDirection === this.vals.right) {
+      // to turn right page
+      start = (this.currPage + 1) * this.total
+
+      this.dataIdx = start
+      if (this.dataIdx > this.datas.length - 1) {
+        this.dataIdx = oldDataIdx
+        return false
+      }
+
+      this.currPage++
+
+    } else if (this.turnDirection === this.vals.up) {
+      // to turn up page
+      console.log('.......turn up')
+      return false
+    } else if (this.turnDirection === this.vals.down) {
+      // to turn down page
+      console.log('.......turn down')
+      return false
+    }
+
+    this.oldColumn = this.currColumn
+    this.oldRow = this.currRow
+    this.currColumn = 0
+    this.currRow = 0
+    data = this.datas.slice(this.dataIdx, this.dataIdx + this.total)
+    this.execCallbacks('turnPage')
+    this.init(data)
+  }
 
   left() {
+    if (
+      this.side === this.vals.left ||
+        this.corner === this.vals.lucorner ||
+        this.corner === this.vals.ldcorner
+    ) {
+      // turn left
+      this.turn(this.vals.left)
+      return false
+    }
     this.oldRow = this.currRow
     this.oldColumn = this.currColumn--
     this.dataIdx--
     this.idxChgHandler(this.vals.left)
-
   }
 
   right() {
+    if (
+      this.side === this.vals.right ||
+        this.corner === this.vals.rucorner ||
+        this.corner === this.vals.rdcorner
+    ) {
+      this.turn(this.vals.right)
+      return false
+    }
     this.oldRow = this.currRow
     this.oldColumn = this.currColumn++
     this.dataIdx++
@@ -146,6 +256,14 @@ export default class Grid {
   }
 
   up() {
+    if (
+      this.side === this.vals.up ||
+        this.corner === this.vals.lucorner ||
+        this.corner === this.vals.rucorner
+    ) {
+      this.turn(this.vals.up)
+      return false
+    }
     this.oldColumn = this.currColumn
     this.oldRow = this.currRow--
     this.dataIdx -= this.columns
@@ -153,6 +271,18 @@ export default class Grid {
   }
 
   down() {
+    if (this.isLastRow) {
+      console.log('is the last row....')
+      return false
+    }
+    if (
+      this.side === this.vals.down ||
+        this.corner === this.vals.ldcorner ||
+        this.corner === this.vals.rdcorner
+    ) {
+      this.turn(this.vals.down)
+      return false
+    }
     this.oldColumn = this.currColumn
     this.oldRow = this.currRow++
     this.dataIdx += this.columns
@@ -160,11 +290,8 @@ export default class Grid {
   }
 
   idxChgHandler() {
-    this.updateDataIdx()
+    // this.updateDataIdx()
     this.updateFocus()
-    console.log(
-      this.currRow, this.currColumn, this.dataIdx, 'idxChgHandler'
-    )
   }
 
   execCallbacks(fnName) {
@@ -180,7 +307,12 @@ export default class Grid {
       oldRow: this.oldRow,
       currColumn: this.currColumn,
       oldColumn: this.oldColumn,
-      dataIdx: this.dataIdx
+      dataIdx: this.dataIdx,
+      side: this.side,
+      corner: this.corner,
+      turnDirection: this.turnDirection,
+      oldIdx: this.oldRow * this.columns + this.oldColumn,
+      newIdx: this.currRow * this.columns + this.currColumn
     })
   }
 
@@ -209,6 +341,9 @@ export default class Grid {
       break
     case this.keys.BACK:
       this.back()
+      break
+    case this.keys.OK:
+      console.log(this.datas[this.dataIdx], '13')
       break
     default: break
     }
