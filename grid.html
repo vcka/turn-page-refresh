@@ -129,17 +129,24 @@
       datas: gridDatas,
       callbacks: {
         updateFocusDone(opts) {
+          console.log(opts.fuzzy)
+          if (opts.fuzzy === 0) {
+            rFuzzy.style.visibility = 'hidden'
+            lFuzzy.style.visibility = 'hidden'
+          } else if (opts.fuzzy === 1) {
+            rFuzzy.style.visibility = 'hidden'
+            lFuzzy.style.visibility = 'visible'
+          } else if (opts.fuzzy === 2) {
+            rFuzzy.style.visibility = 'visible'
+            lFuzzy.style.visibility = 'hidden'
+          } else if (opts.fuzzy === 3) {
+            rFuzzy.style.visibility = 'visible'
+            lFuzzy.style.visibility = 'visible'
+          }
         },
 
         turnPage(opts) {
           console.log(opts, 'turnpage')
-          if (opts.turnDirection === 'right') {
-            rFuzzy.style.visibility = 'hidden'
-            lFuzzy.style.visibility = 'visible'
-          } else if (opts.turnDirection === 'left') {
-            rFuzzy.style.visibility = 'visible'
-            lFuzzy.style.visibility = 'hidden'
-          }
         }
       },
 

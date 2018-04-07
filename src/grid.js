@@ -19,6 +19,7 @@ export default class Grid {
     this.currPage = 0
     this.totalPage = Math.ceil(this.datas.length / this.total)
     this.isLastRow = false
+    this.fuzzy = 0 // 1 - left, 2 - right, 3 - both
 
     // fns outer
     this._updateFocus = opts.updateFocus
@@ -111,7 +112,7 @@ export default class Grid {
     } else if (this.currRow === this.rows - 1 && this.currColumn === this.columns - 1) {
       // the right-down corner
       this.side = ''
-      this.corner = this.vals.rucorner
+      this.corner = this.vals.rdcorner
     } else if (this.rows - 1 === this.currRow) {
       // the last row
       this.side = this.vals.down
@@ -170,6 +171,7 @@ export default class Grid {
     })
 
     this.touchEdge()
+    this.updateFuzzyVal()
     this.execCallbacks('updateFocusDone')
   }
 
@@ -207,11 +209,9 @@ export default class Grid {
 
     } else if (this.turnDirection === this.vals.up) {
       // to turn up page
-      console.log('.......turn up')
       return false
     } else if (this.turnDirection === this.vals.down) {
       // to turn down page
-      console.log('.......turn down')
       return false
     }
 
@@ -289,6 +289,20 @@ export default class Grid {
     this.idxChgHandler(this.vals.down)
   }
 
+  updateFuzzyVal() {
+    if (this.totalPage <= 1) {
+      this.fuzzy = 0
+    } else {
+      if (this.currPage > 0 && this.currPage < this.totalPage - 1) {
+        this.fuzzy = 3
+      } else if (this.currPage === 0) {
+        this.fuzzy = 2
+      } else if (this.currPage === this.totalPage - 1) {
+        this.fuzzy = 1
+      }
+    }
+  }
+
   idxChgHandler() {
     // this.updateDataIdx()
     this.updateFocus()
@@ -312,7 +326,8 @@ export default class Grid {
       corner: this.corner,
       turnDirection: this.turnDirection,
       oldIdx: this.oldRow * this.columns + this.oldColumn,
-      newIdx: this.currRow * this.columns + this.currColumn
+      newIdx: this.currRow * this.columns + this.currColumn,
+      fuzzy: this.fuzzy
     })
   }
 
@@ -340,10 +355,11 @@ export default class Grid {
       this.pageDown()
       break
     case this.keys.BACK:
-      this.back()
+      this.execCallbacks('keyBack')
+      // this.back()
       break
     case this.keys.OK:
-      console.log(this.datas[this.dataIdx], '13')
+      this.execCallbacks('keyConfirm')
       break
     default: break
     }
