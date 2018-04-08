@@ -329,7 +329,9 @@ export default class Grid {
       turnDirection: this.turnDirection,
       oldIdx: this.oldRow * this.columns + this.oldColumn,
       newIdx: this.currRow * this.columns + this.currColumn,
-      fuzzy: this.fuzzy
+      fuzzy: this.fuzzy,
+      currPage: this.currPage,
+      totalPage: this.totalPage
     })
   }
 
