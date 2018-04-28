@@ -80,32 +80,33 @@
     </div>
     <div id="wrap">
       <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- <span></span> -->
+      <!-- </div> -->
     <script src="./src/gridDatas.js"></script>
     <script src="./dist/turn.iife.js"></script>
     <script>
 
+    const rows = 1, columns = 1
     const spans = document.querySelectorAll('#wrap span')
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < rows * columns; i++) {
       spans[i].innerHTML = gridDatas[i].CityName
     }
 
@@ -124,9 +125,12 @@
       statics: {
         items: [].slice.call(document.querySelectorAll('#wrap span'))
       },
-      rows: 5, columns: 4, // 5 x 4
+      rows, columns, // 5 x 4
       cachedDataIdx: 20,
       datas: gridDatas,
+      ban: {
+        keys: [ 38, 40 ]
+      },
       callbacks: {
         updateFocusDone(opts) {
           if (opts.fuzzy === 0) {

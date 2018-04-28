@@ -20,6 +20,7 @@ export default class Grid {
     this.totalPage = Math.ceil(this.datas.length / this.total)
     this.isLastRow = false
     this.fuzzy = 0 // 1 - left, 2 - right, 3 - both
+    this.ban = opts.ban
 
     // fns outer
     this._updateFocus = opts.updateFocus
@@ -27,6 +28,13 @@ export default class Grid {
     this.keys = {
       UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
       PAGE_UP: 33, PAGE_DOWN: 34, OK: 13, BACK: 8
+    }
+
+    if (opts.province && opts.province === '海南') {
+      this.keys = {
+        UP: 87, DOWN: 83, LEFT: 65, RIGHT: 68,
+        PAGE_UP: 306, PAGE_DOWN: 307, OK: 13, BACK: 8
+      }
     }
 
     this.vals = {
@@ -97,6 +105,7 @@ export default class Grid {
   }
 
   touchEdge() {
+
     if (this.currRow === 0 && this.currColumn === 0) {
       // the left-up corner
       this.side = ''
@@ -190,6 +199,7 @@ export default class Grid {
       start = (this.currPage - 1) * this.total
       start = start <= 0 ? 0 : start
       this.dataIdx = start
+      console.log(direction, start, this.dataIdx, 'turn')
       if (this.dataIdx < 0 || this.currPage <= 0) {
         this.dataIdx = oldDataIdx
         return false
@@ -230,7 +240,8 @@ export default class Grid {
     if (
       this.side === this.vals.left ||
         this.corner === this.vals.lucorner ||
-        this.corner === this.vals.ldcorner
+        this.corner === this.vals.ldcorner ||
+        this.columns === 1
     ) {
       // turn left
       this.turn(this.vals.left)
@@ -246,7 +257,8 @@ export default class Grid {
     if (
       this.side === this.vals.right ||
         this.corner === this.vals.rucorner ||
-        this.corner === this.vals.rdcorner
+        this.corner === this.vals.rdcorner ||
+        this.columns === 1
     ) {
       this.turn(this.vals.right)
       return false
@@ -261,7 +273,8 @@ export default class Grid {
     if (
       this.side === this.vals.up ||
         this.corner === this.vals.lucorner ||
-        this.corner === this.vals.rucorner
+        this.corner === this.vals.rucorner ||
+        this.rows === 1
     ) {
       this.turn(this.vals.up)
       return false
@@ -280,7 +293,8 @@ export default class Grid {
     if (
       this.side === this.vals.down ||
         this.corner === this.vals.ldcorner ||
-        this.corner === this.vals.rdcorner
+        this.corner === this.vals.rdcorner ||
+        this.rows === 1
     ) {
       this.turn(this.vals.down)
       return false
@@ -337,6 +351,12 @@ export default class Grid {
 
   keyHandler(keycode) {
 
+    if (this.ban && this.ban.keys) {
+      if (this.ban.keys.indexOf(keycode) > -1) {
+        console.log('banned: ' + keycode)
+        return false
+      }
+    }
     switch (keycode) {
     case this.keys.UP:
       this.up()

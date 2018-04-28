@@ -63,6 +63,13 @@ export default class List {
       PAGE_UP: 33, PAGE_DOWN: 34, OK: 13, BACK: 8
     }
 
+    if (opts.province && opts.province === '海南') {
+      this.keys = {
+        UP: 87, DOWN: 83, LEFT: 65, RIGHT: 68,
+        PAGE_UP: 306, PAGE_DOWN: 307, OK: 13, BACK: 8
+      }
+    }
+
     this.vals = {
       up: -1, down: 1, pup: -2, pdown: 2, jump: 3
     }
