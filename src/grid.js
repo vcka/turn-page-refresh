@@ -151,6 +151,12 @@ export default class Grid {
       this.isLastRow = true
     }
 
+    if (
+      this.dataIdx === this.datas.length - 1
+    ) {
+      this.isLastOne = true
+    }
+
     this.execCallbacks('touchEdge')
   }
 
@@ -250,10 +256,13 @@ export default class Grid {
     this.oldRow = this.currRow
     this.oldColumn = this.currColumn--
     this.dataIdx--
+    this.isLastOne = false
     this.idxChgHandler(this.vals.left)
   }
 
   right() {
+    if (this.isLastOne) { return false }
+
     if (
       this.side === this.vals.right ||
         this.corner === this.vals.rucorner ||
@@ -270,6 +279,7 @@ export default class Grid {
   }
 
   up() {
+
     if (
       this.side === this.vals.up ||
         this.corner === this.vals.lucorner ||
@@ -282,10 +292,12 @@ export default class Grid {
     this.oldColumn = this.currColumn
     this.oldRow = this.currRow--
     this.dataIdx -= this.columns
+    this.isLastOne = false
     this.idxChgHandler(this.vals.up)
   }
 
   down() {
+
     if (this.isLastRow) {
       console.log('is the last row....')
       return false
@@ -302,6 +314,7 @@ export default class Grid {
     this.oldColumn = this.currColumn
     this.oldRow = this.currRow++
     this.dataIdx += this.columns
+    this.isLastOne = false
     this.idxChgHandler(this.vals.down)
   }
 

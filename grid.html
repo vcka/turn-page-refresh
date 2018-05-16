@@ -30,9 +30,16 @@
       background-color: green;
     }
 
-    .focus {
-
+    span:after {
+      display: inline-block;
+      margin-left: -65px;
+      margin-bottom: -25px;
+      content: '';
+      width: 65px;
+      height: 4px;
+      background-color: transparent;
     }
+
 
     .line {
       width: 32px;
@@ -41,12 +48,6 @@
     }
 
     .focus:after {
-      display: inline-block;
-      margin-left: -65px;
-      margin-bottom: -25px;
-      content: '';
-      width: 65px;
-      height: 4px;
       background-color: #fff;
     }
 
@@ -80,31 +81,31 @@
     </div>
     <div id="wrap">
       <span></span>
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- <span></span> -->
-      <!-- </div> -->
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
     <script src="./src/gridDatas.js"></script>
     <script src="./dist/turn.iife.js"></script>
     <script>
 
-    const rows = 1, columns = 1
+    const rows = 5, columns = 4
     const spans = document.querySelectorAll('#wrap span')
     for (let i = 0; i < rows * columns; i++) {
       spans[i].innerHTML = gridDatas[i].CityName
@@ -129,7 +130,7 @@
       cachedDataIdx: 20,
       datas: gridDatas,
       ban: {
-        keys: [ 38, 40 ]
+        /* keys: [ 38, 40 ]*/
       },
       callbacks: {
         updateFocusDone(opts) {
