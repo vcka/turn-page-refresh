@@ -9,6 +9,7 @@ export default class Grid {
     this.items = opts.statics.items
     this.datas = opts.datas
     this.rows = opts.rows
+    this.multiCols = opts.multiCols || 0
     this.columns = opts.columns
     this.oldRow = 0
     this.oldColumn = 0
@@ -19,6 +20,7 @@ export default class Grid {
     this.currPage = 0
     this.totalPage = Math.ceil(this.datas.length / this.total)
     this.isLastRow = false
+    this.isLastCol = false
     this.fuzzy = 0 // 1 - left, 2 - right, 3 - both
     this.ban = opts.ban
 
@@ -51,12 +53,12 @@ export default class Grid {
 
     this.updateTpl = opts.updateTpl
     if (!this.updateTpl) {
-      throw new Error('[Turn/List] the update template function required.')
+      throw new Error('[Turn/Grid] the update template function required.')
     }
 
     this.clearTpl = opts.clearTpl
     if (!this.clearTpl) {
-      throw new Error('[Turn/List] the clear template function required.')
+      throw new Error('[Turn/Grid] the clear template function required.')
     }
 
     this.init()
@@ -64,17 +66,6 @@ export default class Grid {
 
   init(data) {
     if (!this.datas || !this.datas.length) { return false }
-    // let start = 0
-    if (this.dataIdx > 0) {
-      // const mod = this.dataIdx % this.rows
-      // start = this.dataIdx - mod
-      // this.currIdx = mod
-    }
-    // const datas = this.datas.slice(start, this.rows * this.columns)
-
-    // if (!datas || !datas.length) {
-    // throw new Error('[Turn/Grid] init failed, no datas')
-    // }
 
     let _data = data || this.datas.slice(0, this.total)
     if (data) {
@@ -142,13 +133,22 @@ export default class Grid {
       this.corner = this.side = ''
     }
 
-    this.isLastRow = false
-    if (
-      // this.dataIdx === this.datas.length - 1
-      this.dataIdx >= this.datas.length - this.columns
-    ) {
-      // the last row
-      this.isLastRow = true
+    if (this.multiCols > 0) {
+      this.isLastCol = false
+      if (
+        this.dataIdx >= this.datas.length - this.rows
+      ) {
+        // the last col
+        this.isLastCol = true
+      }
+    } else {
+      this.isLastRow = false
+      if (
+        this.dataIdx >= this.datas.length - this.columns
+      ) {
+        // the last row
+        this.isLastRow = true
+      }
     }
 
     if (
@@ -166,8 +166,15 @@ export default class Grid {
 
   updateFocus() {
     if (!this.datas || !this.datas.length) { return false }
-    const currIdx = this.currRow * this.columns + this.currColumn
-    const oldIdx = this.oldRow * this.columns + this.oldColumn
+    let currIdx, oldIdx
+
+    if (this.multiCols > 0) {
+      currIdx = this.currColumn * this.rows + this.currRow
+      oldIdx = this.oldColumn * this.rows + this.oldRow
+    } else {
+      currIdx = this.currRow * this.columns + this.currColumn
+      oldIdx = this.oldRow * this.columns + this.oldColumn
+    }
     const newEl = this.items[currIdx]
     const oldEl = this.items[oldIdx]
 
@@ -205,9 +212,9 @@ export default class Grid {
       start = (this.currPage - 1) * this.total
       start = start <= 0 ? 0 : start
       this.dataIdx = start
-      console.log(direction, start, this.dataIdx, 'turn')
       if (this.dataIdx < 0 || this.currPage <= 0) {
         this.dataIdx = oldDataIdx
+        this.execCallbacks('turnLeft')
         return false
       }
 
@@ -226,9 +233,11 @@ export default class Grid {
       this.currPage++
 
     } else if (this.turnDirection === this.vals.up) {
+      this.execCallbacks('turnUp')
       // to turn up page
       return false
     } else if (this.turnDirection === this.vals.down) {
+      this.execCallbacks('turnDown')
       // to turn down page
       return false
     }
@@ -255,13 +264,21 @@ export default class Grid {
     }
     this.oldRow = this.currRow
     this.oldColumn = this.currColumn--
-    this.dataIdx--
+    if (this.multiCols > 0) {
+      this.dataIdx -= this.rows
+    } else {
+      this.dataIdx--
+    }
     this.isLastOne = false
     this.idxChgHandler(this.vals.left)
   }
 
   right() {
-    if (this.isLastOne) { return false }
+    if (this.multiCols > 0) {
+      if (this.isLastCol) { return false }
+    } else {
+      if (this.isLastOne) { return false }
+    }
 
     if (
       this.side === this.vals.right ||
@@ -274,7 +291,11 @@ export default class Grid {
     }
     this.oldRow = this.currRow
     this.oldColumn = this.currColumn++
-    this.dataIdx++
+    if (this.multiCols > 0) {
+      this.dataIdx += this.rows
+    } else {
+      this.dataIdx++
+    }
     this.idxChgHandler(this.vals.right)
   }
 
@@ -291,17 +312,23 @@ export default class Grid {
     }
     this.oldColumn = this.currColumn
     this.oldRow = this.currRow--
-    this.dataIdx -= this.columns
+    if (this.multiCols > 0) {
+      this.dataIdx--
+    } else {
+      this.dataIdx -= this.columns
+    }
     this.isLastOne = false
     this.idxChgHandler(this.vals.up)
   }
 
   down() {
 
-    if (this.isLastRow) {
-      console.log('is the last row....')
-      return false
+    if (this.multiCols > 0) {
+      if (this.isLastOne) { return false }
+    } else {
+      if (this.isLastRow) { return false }
     }
+
     if (
       this.side === this.vals.down ||
         this.corner === this.vals.ldcorner ||
@@ -313,7 +340,11 @@ export default class Grid {
     }
     this.oldColumn = this.currColumn
     this.oldRow = this.currRow++
-    this.dataIdx += this.columns
+    if (this.multiCols > 0) {
+      this.dataIdx++
+    } else {
+      this.dataIdx += this.columns
+    }
     this.isLastOne = false
     this.idxChgHandler(this.vals.down)
   }
@@ -366,7 +397,6 @@ export default class Grid {
 
     if (this.ban && this.ban.keys) {
       if (this.ban.keys.indexOf(keycode) > -1) {
-        console.log('banned: ' + keycode)
         return false
       }
     }

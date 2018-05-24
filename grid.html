@@ -18,6 +18,12 @@
       background-color: black;
     }
 
+    .col {
+      float: left;
+      width: 306px;
+      height: 100%;
+    }
+
     span {
       display: inline-block;
       width: 306px;
@@ -80,26 +86,34 @@
       <div class="line right-line"></div>
     </div>
     <div id="wrap">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
+      <!-- <div class="col"> -->
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <!-- </div> -->
+        <!-- <div class="col"> -->
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <!-- </div> -->
+        <!-- <div class="col"> -->
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <!-- </div> -->
+        <!-- <div class="col"> -->
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <!-- </div> -->
     </div>
     <script src="./src/gridDatas.js"></script>
     <script src="./dist/turn.iife.js"></script>
@@ -126,6 +140,7 @@
       statics: {
         items: [].slice.call(document.querySelectorAll('#wrap span'))
       },
+      /* multiCols: 4,*/
       rows, columns, // 5 x 4
       cachedDataIdx: 20,
       datas: gridDatas,
@@ -151,6 +166,18 @@
 
         turnPage(opts) {
           console.log(opts, 'turnpage')
+        },
+
+        turnDown(opts) {
+          console.log(opts, 'turnDown')
+        },
+
+        turnUp(opts) {
+          console.log(opts, 'turnUp')
+        },
+
+        turnLeft(opts) {
+          console.log(opts, 'turnLeft')
         }
       },
 
@@ -176,7 +203,7 @@
     })
 
     window.onkeydown = event => {
-      
+
       grid.keyHandler(event.keyCode || event.which)
     }
     </script>
