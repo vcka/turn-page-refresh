@@ -86,34 +86,34 @@
       <div class="line right-line"></div>
     </div>
     <div id="wrap">
-      <!-- <div class="col"> -->
+      <div class="col">
         <span></span>
         <span></span>
         <span></span>
         <span></span>
         <span></span>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
+      </div>
+      <div class="col">
         <span></span>
         <span></span>
         <span></span>
         <span></span>
         <span></span>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
+      </div>
+      <div class="col">
         <span></span>
         <span></span>
         <span></span>
         <span></span>
         <span></span>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
+      </div>
+      <div class="col">
         <span></span>
         <span></span>
         <span></span>
         <span></span>
         <span></span>
-        <!-- </div> -->
+      </div>
     </div>
     <script src="./src/gridDatas.js"></script>
     <script src="./dist/turn.iife.js"></script>
@@ -122,7 +122,8 @@
     const rows = 5, columns = 4
     const spans = document.querySelectorAll('#wrap span')
     for (let i = 0; i < rows * columns; i++) {
-      spans[i].innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+      const item = gridDatas[i]
+      spans[i].innerHTML = item && item.CityName || ''
     }
 
     const [
@@ -140,7 +141,7 @@
       statics: {
         items: [].slice.call(document.querySelectorAll('#wrap span'))
       },
-      /* multiCols: 4,*/
+      multiCols: 4,
       rows, columns, // 5 x 4
       cachedDataIdx: 20,
       datas: gridDatas,
