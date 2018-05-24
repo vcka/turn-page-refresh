@@ -87,7 +87,9 @@ export default class Grid {
     }
   }
 
-  clear() {}
+  clear() {
+    this.clearTpl(this.statics)
+  }
 
   getPages() {}
 
