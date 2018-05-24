@@ -6,6 +6,44 @@ turn page refresh datas, used on STB(Set Top Box), compatible for all inner-brow
 
 You can provide a list includes more items, `turn-page-refresh` will control it with key handler.
 
+# Update Log
+
+## <2018-05-24 Thu>
+
+1. 增加 `multiCols` 属性配置
+
+  取值：`> 0` 的整数，不传或其他值则默认为普通网格模式。
+
+  作用于多列网格布局，即一组数据作为一列来展示，比如：
+
+  | 第一列      | 第二列      | 第三列       |
+  | 1 name flag | 5 name flag | 9 name flag  |
+  | 2 name flag | 6 name flag | 10 name flag |
+  | 3 name flag | 7 name flag | 11 name flag |
+  | 4 name flag | 8 name flag | 12 name flag |
+
+  如果不配置该属性，会默认是
+
+  | 第一列      | 第二列      | 第三列      |
+  | 1 name flag | 2 name flag | 3 name flag |
+  | 4 name flag | 5 name flag | 6 name flag |
+
+  采取多列网格布局的时候，通常情况下都会讲三列用 `div/ul` 包裹起来，如下的 `css` 布局
+
+  ```
+  <ul class="col-1">
+    <li class="col-item"></li>
+    <li class="col-item"></li>
+  </ul>
+  <ul class="col-2">
+    <li class="col-item"></li>
+    <li class="col-item"></li>
+  </ul>
+  ```
+
+  这种情况如果通过 `col-item` 类名去取，拿到的顺序是按列来分布，因此产生增加该属性的需求。
+
+
 # Build
 
 `git clone https://github.com/gcclll/turn-page-refresh.git`
