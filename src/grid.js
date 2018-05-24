@@ -10,6 +10,7 @@ export default class Grid {
     this.datas = opts.datas
     this.rows = opts.rows
     this.multiCols = opts.multiCols || 0
+    this.noInitFocus = opts.noInitFocus
     this.columns = opts.columns
     this.total = this.rows * this.columns
     this.dataIdx = 0
@@ -92,6 +93,7 @@ export default class Grid {
   getPages() {}
 
   focus() {
+    this.execCallbacks('beforeFocus')
     this.updateFocus()
   }
 
@@ -238,7 +240,11 @@ export default class Grid {
     this.execCallbacks('updateFocusDone')
   }
 
-  blur() {}
+  blur() {
+    const curr = this.getIdxByDataIdx(this.dataIdx)
+    this.execCallbacks('beforeBlur')
+    cls.remove(curr, 'focus')
+  }
 
   turn(direction) {
     const oldDataIdx = this.oldDataIdx = this.dataIdx
@@ -419,6 +425,8 @@ export default class Grid {
     const old = this.getCurrent(true)
 
     fn({
+      oldEl: this.items[this.getIdxByDataIdx(this.dataIdx)],
+      currEl: this.items[this.getIdxByDataIdx(this.oldDataIdx)],
       data: this.datas[this.dataIdx],
       currRow: curr.row,
       oldRow: old.row,
