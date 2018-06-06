@@ -22,6 +22,7 @@ export default class Grid {
     this.isLastCol = false
     this.fuzzy = 0 // 1 - left, 2 - right, 3 - both
     this.ban = opts.ban
+    this.interrupt = opts.interrupt
 
     // fns outer
     this._updateFocus = opts.updateFocus
@@ -186,7 +187,7 @@ export default class Grid {
       this.isLastOne = true
     }
 
-    this.log('touchEdge')
+
     this.execCallbacks('touchEdge')
   }
 
@@ -234,16 +235,15 @@ export default class Grid {
       oldRow: old.row, oldColumn: old.column
     })
 
-    this.log('updateFocus')
     this.touchEdge()
     this.updateFuzzyVal()
     this.execCallbacks('updateFocusDone')
   }
 
   blur() {
-    const curr = this.getIdxByDataIdx(this.dataIdx)
+    const currIdx = this.getIdxByDataIdx(this.dataIdx)
     this.execCallbacks('beforeBlur')
-    cls.remove(curr, 'focus')
+    cls.remove(this.items[currIdx], 'focus')
   }
 
   turn(direction) {
@@ -294,6 +294,7 @@ export default class Grid {
   }
 
   left() {
+
     if (
       this.side === this.vals.left ||
         this.corner === this.vals.lucorner ||
@@ -415,16 +416,27 @@ export default class Grid {
     this.updateFocus()
   }
 
+  ok() {
+    this.execCallbacks('ok')
+  }
+
   execCallbacks(fnName) {
     if (!this.datas || !this.datas.length) { return false }
 
     const callbacks = this.callbacks
     if (!callbacks) { return false }
     const fn = callbacks[fnName] || function() {}
+
+    fn(this.getCbsParams())
+  }
+
+  getCbsParams() {
     const curr = this.getCurrent()
     const old = this.getCurrent(true)
-
-    fn({
+    const _this = this
+    return {
+      focus: () => _this.focus(),
+      blur: () => _this.blur(),
       oldEl: this.items[this.getIdxByDataIdx(this.dataIdx)],
       currEl: this.items[this.getIdxByDataIdx(this.oldDataIdx)],
       data: this.datas[this.dataIdx],
@@ -441,10 +453,48 @@ export default class Grid {
       fuzzy: this.fuzzy,
       currPage: this.currPage,
       totalPage: this.totalPage
-    })
+    }
+  }
+
+  interruptHandler(keycode) {
+
+    const data = this.datas[this.dataIdx]
+    const currEl = this.items[this.getIdxByDataIdx(this.dataIdx)]
+
+    const attr = this.interrupt.attr
+    if (keycode === this.keys.LEFT) {
+      if (data.hasHold) {
+        data.hasHold = false
+        this.interrupt.handler(false, currEl)
+        this.focus()
+        return true
+      }
+    } else if (keycode === this.keys.RIGHT) {
+      if (data.hasHold) {
+        if (this.isLastCol) { return true }
+        data.hasHold = false
+        this.interrupt.handler(false, currEl)
+      } else if (data[attr]) {
+        data.hasHold = true
+        this.blur()
+        this.interrupt.handler(true, currEl)
+        return true
+      }
+    } else if (keycode === this.keys.UP || keycode === this.keys.DOWN) {
+      if (data.hasHold) {
+        data.hasHold = false
+        this.interrupt.handler(false, currEl)
+      }
+    }
+
+    return false
   }
 
   keyHandler(keycode) {
+
+    if (this.interruptHandler(keycode)) {
+      return false
+    }
 
     if (this.ban && this.ban.keys) {
       if (this.ban.keys.indexOf(keycode) > -1) {
@@ -481,8 +531,6 @@ export default class Grid {
       break
     default: break
     }
-
-    this.log('key')
   }
 
   log(name) {

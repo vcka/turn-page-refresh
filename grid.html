@@ -24,7 +24,8 @@
       height: 100%;
     }
 
-    span {
+    li {
+      list-style: none;
       display: inline-block;
       width: 306px;
       height: 130px;
@@ -36,6 +37,12 @@
       background-color: green;
     }
 
+    li span {
+      display: inline-block;
+      width: 50%;
+      height: 100%;
+    }
+
     span:after {
       display: inline-block;
       margin-left: -65px;
@@ -45,7 +52,6 @@
       height: 4px;
       background-color: transparent;
     }
-
 
     .line {
       width: 32px;
@@ -78,6 +84,18 @@
       background-color: red;
     }
 
+    .first {
+      background: blue;
+    }
+
+    .second {
+      background: red;
+    }
+
+    .bfocus {
+      color: #fff800;
+    }
+
     </style>
   </head>
   <body>
@@ -86,43 +104,48 @@
       <div class="line right-line"></div>
     </div>
     <div id="wrap">
-      <!-- <div class="col"> -->
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <!-- </div> -->
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
     </div>
     <script src="./src/gridDatas.js"></script>
     <script src="./dist/turn.iife.js"></script>
     <script>
 
     const rows = 5, columns = 4
-    const spans = document.querySelectorAll('#wrap span')
+    const span1 = document.querySelectorAll('.first')
+    const span2 = document.querySelectorAll('.second')
     for (let i = 0; i < rows * columns; i++) {
-      spans[i].innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+      span1[i].innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+      console.log(gridDatas.isTvod, '...')
+      if (gridDatas[i] && gridDatas[i].isTvod) {
+        span2[i].innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+      }
     }
 
     const [
@@ -138,15 +161,16 @@
     const Grid = turn.Grid
     const grid = new Grid({
       statics: {
-        items: [].slice.call(document.querySelectorAll('#wrap span'))
+        items: [].slice.call(document.querySelectorAll('.first'))
       },
-      /* multiCols: 4,*/
+      multiCols: 4,
       rows, columns, // 5 x 4
       cachedDataIdx: 20,
       datas: gridDatas,
       ban: {
         /* keys: [ 38, 40 ]*/
       },
+
       callbacks: {
         updateFocusDone(opts) {
           if (opts.fuzzy === 0) {
@@ -164,20 +188,44 @@
           }
         },
 
+        beforeBlur(opts) {
+          /* add(opts.currEl, 'bfocus')*/
+        },
+
+        beforeFocus(opts) {
+          /* remove(opts.currEl, 'bfocus')*/
+        },
+
         turnPage(opts) {
-          console.log(opts, 'turnpage')
+          /* console.log(opts, 'turnpage')*/
         },
 
         turnDown(opts) {
-          console.log(opts, 'turnDown')
+          /* console.log(opts, 'turnDown')*/
         },
 
         turnUp(opts) {
-          console.log(opts, 'turnUp')
+          /* console.log(opts, 'turnUp')*/
         },
 
         turnLeft(opts) {
-          console.log(opts, 'turnLeft')
+          /* console.log(opts, 'turnLeft')*/
+        },
+
+        keyConfirm(opts) {
+          console.log(opts.data)
+        }
+      },
+
+      interrupt: {
+        attr: 'isTvod',
+        handler: function(flag, el) {
+          const second = el.parentElement.querySelector('.second')
+          if (flag) {
+            add(second, 'focus')
+          } else {
+            remove(second, 'focus')
+          }
         }
       },
 
@@ -185,9 +233,11 @@
       },
 
       updateTpl: function(statics, index, data) {
+        /* console.log(statics, index, data, 'updateTpl')*/
         if (!statics || !data) { return false }
-        const city = statics.items && statics.items[index]
-        city.innerHTML = data.CityName
+        const item = statics.items && statics.items[index]
+        /* console.log(item)*/
+        item.innerHTML = data.CityName
       },
 
       clearTpl: function(statics) {
@@ -205,6 +255,31 @@
     window.onkeydown = event => {
 
       grid.keyHandler(event.keyCode || event.which)
+    }
+
+    function add( elem, name ) {
+      if (!elem || !elem.className) { return false }
+      if ( !hasClass( elem, name ) ) {
+        elem.className += ( elem.className ? ' ' : '' ) + name
+      }
+    }
+
+    function remove( elem, name ) {
+      if (!elem || !elem.className) { return false }
+      let set = ' ' + elem.className + ' '
+
+      // Class name may appear multiple times
+      while ( set.indexOf( ' ' + name + ' ' ) >= 0 ) {
+        set = set.replace( ' ' + name + ' ', ' ' )
+      }
+
+      // Trim for prettiness
+      elem.className = typeof set.trim === 'function' ? set.trim() : set.replace( /^\s+|\s+$/g, '' )
+    }
+
+    function hasClass( elem, name ) {
+      if (!elem || !elem.className) { return false }
+      return ( ' ' + elem.className + ' ' ).indexOf( ' ' + name + ' ' ) >= 0
     }
     </script>
   </body>

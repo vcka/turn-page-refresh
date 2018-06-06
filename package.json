@@ -1,7 +1,7 @@
 {
-  "name": "rollup-demo",
+  "name": "turn-page-refresh",
   "version": "1.0.0",
-  "description": "The Media Player Controller of EPG",
+  "description": "list and grid controller",
   "main": "rollup.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,10 +12,7 @@
     "dev:iife": "rollup -w -c build/config.js --environment TARGET:web-dev-iife",
     "build": "node build/build.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@code.aliyun.com:gccll/mp-controller.git"
-  },
+  "repository": "https://github.com/gcclll/turn-page-refresh.git",
   "keywords": [
     "MediaPlayer"
   ],
