@@ -104,34 +104,34 @@
       <div class="line right-line"></div>
     </div>
     <div id="wrap">
-      <div class="col">
+      <!-- <div class="col"> -->
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-      </div>
-      <div class="col">
+        <!-- </div> -->
+        <!-- <div class="col"> -->
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-      </div>
-      <div class="col">
+        <!-- </div> -->
+        <!-- <div class="col"> -->
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-      </div>
-      <div class="col">
+        <!-- </div> -->
+      <!-- <div class="col"> -->
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-      </div>
+        <!-- </div> -->
     </div>
     <script src="./src/gridDatas.js"></script>
     <script src="./dist/turn.iife.js"></script>
@@ -163,7 +163,7 @@
       statics: {
         items: [].slice.call(document.querySelectorAll('.first'))
       },
-      multiCols: 4,
+      /* multiCols: 4,*/
       rows, columns, // 5 x 4
       cachedDataIdx: 20,
       datas: gridDatas,
@@ -217,6 +217,7 @@
         }
       },
 
+      /*
       interrupt: {
         attr: 'isTvod',
         handler: function(flag, el) {
@@ -227,7 +228,7 @@
             remove(second, 'focus')
           }
         }
-      },
+      }, */
 
       updateFocus: function(opts) {
       },

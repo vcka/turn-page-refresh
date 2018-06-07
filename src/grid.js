@@ -162,7 +162,7 @@ export default class Grid {
     let mod = 0
     if (this.multiCols > 0) {
       this.isLastCol = false
-      mod = this.datas.length % this.rows
+      mod = this.datas.length % this.rows || this.rows
       if (
         this.dataIdx >= this.datas.length - mod
       ) {
@@ -171,7 +171,7 @@ export default class Grid {
       }
     } else {
       this.isLastRow = false
-      mod = this.datas.length % this.columns
+      mod = this.datas.length % this.columns || this.columns
       if (
         this.dataIdx >= this.datas.length - mod
       ) {
@@ -187,7 +187,6 @@ export default class Grid {
       this.isLastOne = true
     }
 
-
     this.execCallbacks('touchEdge')
   }
 
@@ -202,8 +201,9 @@ export default class Grid {
     let currIdx, oldIdx
     const len = this.datas.length
 
+    const lines = this.multiCols > 0 ? this.rows : this.columns
     if (this.dataIdx > len - 1) {
-      if (len % this.rows === 0) {
+      if (len % lines === 0) {
         this.dataIdx = this.oldDataIdx
       } else {
         this.dataIdx = len - 1
@@ -461,6 +461,8 @@ export default class Grid {
     const data = this.datas[this.dataIdx]
     const currEl = this.items[this.getIdxByDataIdx(this.dataIdx)]
 
+    if (!this.interrupt) { return false }
+
     const attr = this.interrupt.attr
     if (keycode === this.keys.LEFT) {
       if (data.hasHold) {
@@ -481,6 +483,11 @@ export default class Grid {
         return true
       }
     } else if (keycode === this.keys.UP || keycode === this.keys.DOWN) {
+      if (keycode === this.keys.UP && this.side === this.vals.up) return true
+      if (keycode === this.keys.DOWN && (
+        this.side === this.vals.down || this.isLastOne || this.isLastRow
+      )) return true
+
       if (data.hasHold) {
         data.hasHold = false
         this.interrupt.handler(false, currEl)
@@ -544,7 +551,8 @@ export default class Grid {
       columns: this.columns,
       isLastCol: this.isLastCol,
       isLastOne: this.isLastOne,
-      multiCols: this.multiCols
+      multiCols: this.multiCols,
+      mod: this.datas.length % this.rows
     }, name)
   }
 }
