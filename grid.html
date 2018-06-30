@@ -104,47 +104,48 @@
       <div class="line right-line"></div>
     </div>
     <div id="wrap">
-      <!-- <div class="col"> -->
+      <div class="col">
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
+      </div>
+      <div class="col">
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-        <!-- </div> -->
-        <!-- <div class="col"> -->
+      </div>
+      <div class="col">
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-        <!-- </div> -->
-      <!-- <div class="col"> -->
+      </div>
+      <div class="col">
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
         <li><span class="first"></span><span class="second"></span></li>
-        <!-- </div> -->
+      </div>
     </div>
     <script src="./src/gridDatas.js"></script>
-    <script src="./dist/turn.iife.js"></script>
+    <script src="./dist/turn.vgrid.iife.js"></script>
     <script>
 
     const rows = 5, columns = 4
     const span1 = document.querySelectorAll('.first')
-    const span2 = document.querySelectorAll('.second')
     for (let i = 0; i < rows * columns; i++) {
-      span1[i].innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
-      console.log(gridDatas.isTvod, '...')
+      const s1 = span1[i]
+      s1.innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+      const span2 = s1.parentElement.querySelector('.second')
+      const isTvod = gridDatas[i].isTvod
       if (gridDatas[i] && gridDatas[i].isTvod) {
-        span2[i].innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+        span2.innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
       }
     }
 
@@ -158,12 +159,12 @@
 
       return new Array(3 - m.length + 1).join('0') + n
     }
-    const Grid = turn.Grid
-    const grid = new Grid({
+    const VGrid = turn.vgrid.VGrid
+    const grid = new VGrid({
       statics: {
         items: [].slice.call(document.querySelectorAll('.first'))
       },
-      /* multiCols: 4,*/
+      multiCols: 4,
       rows, columns, // 5 x 4
       cachedDataIdx: 20,
       datas: gridDatas,
@@ -171,7 +172,12 @@
         /* keys: [ 38, 40 ]*/
       },
 
+      configMenuIdx,
+
       callbacks: {
+        inited() {
+          console.log('inited')
+        },
         updateFocusDone(opts) {
           if (opts.fuzzy === 0) {
             rFuzzy.style.visibility = 'hidden'
@@ -217,7 +223,6 @@
         }
       },
 
-      /*
       interrupt: {
         attr: 'isTvod',
         handler: function(flag, el) {
@@ -228,8 +233,7 @@
             remove(second, 'focus')
           }
         }
-      }, */
-
+      },
       updateFocus: function(opts) {
       },
 
@@ -281,6 +285,124 @@
     function hasClass( elem, name ) {
       if (!elem || !elem.className) { return false }
       return ( ' ' + elem.className + ' ' ).indexOf( ' ' + name + ' ' ) >= 0
+    }
+
+    function ss(k, v, flag) {
+      if (!k || k === '') {
+        return false
+      }
+
+      let result = null
+
+      // to get
+      if (k && !v && v !== 0) {
+        if (type(k) === 'array') {
+          // 1. 数组，返回结果数组
+          result = []
+          for (let i = 0, len = k.length; i < len; i++) {
+            // get the value from session by the item of array
+            let val = window.sessionStorage.getItem(k[i])
+            result.push(val)
+          }
+
+          return result
+        } else if (type(k) === 'object') {
+          // 2. 对象，设置
+          for (let prop in k) {
+            let obj = k[prop]
+            if (obj) {
+              obj = typeof obj === 'object' ? JSON.stringify(obj) : obj + ''
+              window.sessionStorage.setItem(prop, obj)
+            }
+          }
+          return true
+        }
+        result = window.sessionStorage.getItem(k + '')
+        return typeof result === 'number' ? result + '' : result
+      } else if (k && v && flag === true) {
+        // use `k` to get an object from session
+        // use `v` to be a key of the object get above
+        // if the new key in object, return the value of object[v]
+        let obj = window.sessionStorage.getItem(k + '')
+        try {
+          obj = JSON.parse(obj)
+        } catch (e) {
+          return null
+        }
+
+        if (type(obj) === 'object' && obj.hasOwnProperty(v)) {
+          return obj[v]
+        }
+        return true
+      }
+
+      let val = typeof v === 'object' ? JSON.stringify(v) : v + ''
+      window.sessionStorage.setItem('' + k, val)
+      return true
+    }
+
+    function configMenuIdx(objId, index) {
+      return configSessionObj('menuIdx', objId, index)
+    }
+
+    function configSessionObj(objKey, key, value) {
+      if (!objKey) { return '' }
+
+      let idxObj = ss(objKey)
+      if (!idxObj) {
+        idxObj = { }
+      } else {
+        try {
+          idxObj = JSON.parse(idxObj)
+        } catch (error) {
+          idxObj = { }
+        }
+      }
+
+      const toSet = typeof(value) !== 'undefined'
+      if (typeof(key) === 'undefined') {
+        return idxObj
+      } else if (typeof(key) === 'object') {
+        // to set use object
+        for (let prop in key) {
+          if (key.hasOwnProperty(prop)) {
+            idxObj['' + prop] = key[prop]
+          }
+        }
+
+        ss(objKey, idxObj)
+
+        return idxObj
+      }
+
+      if (toSet) {
+        idxObj['' + key] = value
+        ss(objKey, idxObj)
+      } else {
+        if (!idxObj.hasOwnProperty(key)) {
+          idxObj[key] = 0
+          return 0
+        }
+
+        let v = idxObj[key]
+        try {
+          v = JSON.parse(v)
+        } catch (error) {
+          // do nothing
+        }
+
+        return v
+      }
+    }
+
+    function type(obj) {
+      return (
+        Object.prototype.toString
+              .call(obj)
+              .split(' ')[1]
+              .replace(/]/, '')
+              .toLowerCase()
+      )
     }
     </script>
   </body>

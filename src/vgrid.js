@@ -12,9 +12,15 @@ export default class VGrid {
     this.noInitFocus = opts.noInitFocus
     this.columns = opts.columns
     this.total = this.rows * this.columns
-    this.dataIdx = 0
-    this.oldDataIdx = 0
-    this.currPage = 0
+    this.configMenuIdx = opts.configMenuIdx || function() { return null }
+    this.idxObj = this.configMenuIdx('vgrid') || { }
+    const dataIdx = (this.idxObj && this.idxObj.dataIdx) || 0
+    const oldDataIdx = (this.idxObj && this.idxObj.oldDataIdx) || 0
+    this.idxDataIdx = (this.idxObj && this.idxObj.idxDataIdx) || 0
+    this.idxOldDataIdx = (this.idxObj && this.idxObj.idxOldDataIdx) || 0
+    this.dataIdx = dataIdx || 0
+    this.oldDataIdx = oldDataIdx || 0
+    this.currPage = this.dataIdx > 0 ? Math.ceil(this.dataIdx / this.total) : 0
     this.totalPage = Math.ceil(this.datas.length / this.total)
     this.currKey = 0
     this.isLastRow = false
@@ -64,13 +70,40 @@ export default class VGrid {
     this.init()
   }
 
+  getStart() {
+    return this.dataIdx - this.dataIdx % this.total
+  }
+
   init(data) {
     if (!this.datas || !this.datas.length) { return false }
 
     let _data = data || this.datas.slice(0, this.total)
     if (data) {
       this.updateContent(_data)
+    } else if (!data) {
+      if (this.dataIdx > 0) {
+        const start = this.getStart()
+        _data = this.datas.slice(start, start + this.total)
+        this.updateContent(_data)
+      }
+
+      if (this.idxDataIdx > 0) {
+        this.dataIdx = this.idxDataIdx
+      }
+
+      if (this.idxOldDataIdx > 0) {
+        this.oldDataIdx = this.idxOldDataIdx
+      }
+
+      this.datas[this.dataIdx].hasHold = this.idxObj.hasHold
+
+      if (this.interruptHandler(-1)) {
+        this.execCallbacks('moveUpDown')
+        this.execCallbacks('inited')
+        return false
+      }
     }
+
     this.updateFocus()
     this.execCallbacks('moveUpDown')
     this.execCallbacks('inited')
@@ -209,9 +242,8 @@ export default class VGrid {
   }
 
   getIdxByDataIdx(dataIdx) {
-    return (
-      dataIdx % (this.rows * this.columns)
-    )
+    let idx = dataIdx % (this.rows * this.columns)
+    return idx
   }
 
   updateFocus() {
@@ -253,9 +285,24 @@ export default class VGrid {
       oldRow: old.row, oldColumn: old.column
     })
 
-    // this.touchEdge()
+    this.saveIdx(true)
+
+    this.touchEdge()
     this.updateFuzzyVal()
     this.execCallbacks('updateFocusDone')
+  }
+
+  saveIdx(flag) {
+    const idxObj = this.configMenuIdx('vgrid') || { }
+    if (flag) {
+      idxObj.idxDataIdx = this.dataIdx
+      idxObj.idxOldDataIdx = this.oldDataIdx
+    } else {
+      idxObj.dataIdx = this.dataIdx
+      idxObj.oldDataIdx = this.oldDataIdx
+    }
+
+    this.configMenuIdx('vgrid', idxObj)
   }
 
   blur(idx) {
@@ -310,6 +357,9 @@ export default class VGrid {
     }
 
     data = this.datas.slice(this.dataIdx, this.dataIdx + this.total)
+
+    this.saveIdx()
+
     this.execCallbacks('turnPage')
     this.init(data)
   }
@@ -330,7 +380,7 @@ export default class VGrid {
     }
 
     if (data.hasHold) {
-      data.hasHold = false
+      this.changeHold(data, false)
       this.interrupt.handler(false, currEl)
       this.idxChgHandler(this.vals.left)
       return false
@@ -496,6 +546,14 @@ export default class VGrid {
     }
   }
 
+  changeHold(data, value) {
+    data.hasHold = value
+    this.saveIdx(true)
+    const idxObj = this.configMenuIdx('vgrid')
+    idxObj.hasHold = value
+    this.configMenuIdx('vgrid', idxObj)
+  }
+
   interruptHandler(keycode, preHold) {
 
     const data = this.datas[this.dataIdx]
@@ -503,27 +561,39 @@ export default class VGrid {
 
     if (!this.interrupt) { return false }
 
-    console.log(data, currEl, 'interruptHandler')
     const attr = this.interrupt.attr
-    if (keycode === this.keys.LEFT) {
+
+    if (keycode === -1) {
+      if (!data.hasHold) {
+        this.changeHold(data, false)
+        this.interrupt.handler(false, currEl)
+        this.focus()
+        return true
+      }
+
+      this.blur(this.oldDataIdx)
+      this.changeHold(data, true)
+      this.interrupt.handler(true, currEl)
+      return true
+    } else if (keycode === this.keys.LEFT) {
       if (data.hasHold) {
-        data.hasHold = false
+        this.changeHold(data, false)
         this.interrupt.handler(false, currEl)
         this.focus()
         return true
       } else if (data[attr]) {
         this.blur(this.oldDataIdx)
-        data.hasHold = true
+        this.changeHold(data, true)
         this.interrupt.handler(true, currEl)
         return true
       }
     } else if (keycode === this.keys.RIGHT) {
       if (data.hasHold) {
         if (this.isLastCol) { return true }
-        data.hasHold = false
+        this.changeHold(data, false)
         this.interrupt.handler(false, currEl)
       } else if (data[attr]) {
-        data.hasHold = true
+        this.changeHold(data, true)
         this.blur()
         this.interrupt.handler(true, currEl)
         return true
@@ -539,10 +609,10 @@ export default class VGrid {
       ))) return true
 
       if (data.hasHold) {
-        data.hasHold = false
+        this.changeHold(data, false)
         this.interrupt.handler(false, currEl)
       } else if (data[attr] && preHold) {
-        data.hasHold = true
+        this.changeHold(data, true)
         this.blur(this.oldDataIdx)
         this.interrupt.handler(true, currEl)
         return true

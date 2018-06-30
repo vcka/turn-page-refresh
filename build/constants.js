@@ -1,4 +1,4 @@
 // constants => CONS
 module.exports = {
-  MODULE_NAME: 'turn'
+  MODULE_NAME: 'turn.vgrid'
 }
