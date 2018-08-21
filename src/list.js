@@ -249,6 +249,13 @@ export default class List {
       numStr = numStr.replace(/^0+/, '')
     }
 
+    const findIdx = this.callbacks.findIdx || null
+    let idx = -1
+
+    if (findIdx) {
+      idx = this.execCallbacks('findIdx')
+    }
+
     // 跳转后清空频道数字
     this.inputNums = []
 
@@ -256,9 +263,11 @@ export default class List {
       return false
     }
     this.blur()
-    this.dataIdx = num - 1
+    this.dataIdx = idx !== -1 ? idx : num - 1
+    this.oldIdx = this.currIdx
     this.currIdx = this.dataIdx % this.rows
 
+    this.execCallbacks('inputingNumber')
     this.idxChgHandler(this.vals.jump)
   }
 
@@ -272,7 +281,6 @@ export default class List {
     let nums = this.inputNums
     // 频道号数字
     let channelNum = parseInt(nums.join(''), 10)
-    this.execCallbacks('inputingNumber')
     clearTimeout(this.inputTimer)
     this.inputTimer = setTimeout(() => {
       clearTimeout(this.jumpTimer)
@@ -296,7 +304,8 @@ export default class List {
     if (!callbacks) { return false }
     const fn = callbacks[fnName] || function() {}
 
-    fn({
+    return fn({
+      datas: this.datas,
       data: this.datas[this.dataIdx],
       currIdx: this.currIdx,
       oldIdx: this.oldIdx,
