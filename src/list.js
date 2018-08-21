@@ -267,7 +267,6 @@ export default class List {
     this.oldIdx = this.currIdx
     this.currIdx = this.dataIdx % this.rows
 
-    this.execCallbacks('inputingNumber')
     this.idxChgHandler(this.vals.jump)
   }
 
@@ -281,6 +280,7 @@ export default class List {
     let nums = this.inputNums
     // 频道号数字
     let channelNum = parseInt(nums.join(''), 10)
+    this.execCallbacks('inputingNumber')
     clearTimeout(this.inputTimer)
     this.inputTimer = setTimeout(() => {
       clearTimeout(this.jumpTimer)
