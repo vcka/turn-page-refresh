@@ -304,17 +304,7 @@ export default class List {
     if (!callbacks) { return false }
     const fn = callbacks[fnName] || function() {}
 
-    return fn({
-      datas: this.datas,
-      data: this.datas[this.dataIdx],
-      currIdx: this.currIdx,
-      oldIdx: this.oldIdx,
-      dataIdx: this.dataIdx,
-      inputNums: this.inputNums,
-      currEl: this.statics.items[this.currIdx],
-      oldEl: this.statics.items[this.oldEl],
-      items: this.statics.items
-    })
+    return fn(this.getCurrDatas())
   }
 
   getCurrDatas() {
@@ -327,7 +317,9 @@ export default class List {
       inputNums: this.inputNums,
       currEl: this.statics.items[this.currIdx],
       oldEl: this.statics.items[this.oldEl],
-      items: this.statics.items
+      items: this.statics.items,
+      currPage: this.currPage,
+      totalPages: this.totalPages
     }
   }
 
