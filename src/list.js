@@ -310,8 +310,25 @@ export default class List {
       currIdx: this.currIdx,
       oldIdx: this.oldIdx,
       dataIdx: this.dataIdx,
-      inputNums: this.inputNums
+      inputNums: this.inputNums,
+      currEl: this.statics.items[this.currIdx],
+      oldEl: this.statics.items[this.oldEl],
+      items: this.statics.items
     })
+  }
+
+  getCurrDatas() {
+    return {
+      datas: this.datas,
+      data: this.datas[this.dataIdx],
+      currIdx: this.currIdx,
+      oldIdx: this.oldIdx,
+      dataIdx: this.dataIdx,
+      inputNums: this.inputNums,
+      currEl: this.statics.items[this.currIdx],
+      oldEl: this.statics.items[this.oldEl],
+      items: this.statics.items
+    }
   }
 
   idxChgHandler(direction) {
