@@ -463,6 +463,10 @@ export default class List {
     this.idxChgHandler(this.vals.down)
   }
 
+  ok() {
+    this.execCallbacks('ok')
+  }
+
   left() {
     if (this.direction === 'vertical') {
       return false
@@ -483,6 +487,9 @@ export default class List {
       return false
     }
     switch (keycode) {
+    case this.keys.OK:
+      this.ok()
+      break
     case this.keys.UP:
       this.up()
       break
