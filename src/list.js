@@ -318,8 +318,7 @@ export default class List {
       currEl: this.statics.items[this.currIdx],
       oldEl: this.statics.items[this.oldEl],
       items: this.statics.items,
-      currPage: this.currPage,
-      totalPages: this.totalPages
+      pages: this.getPages('object')
     }
   }
 

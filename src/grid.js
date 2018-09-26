@@ -67,8 +67,9 @@ export default class Grid {
   init(data) {
     if (!this.datas || !this.datas.length) { return false }
 
-    let _data = data || this.datas.slice(0, this.total)
-    if (data) {
+    let _data = data || this.datas.slice(this.dataIdx, this.dataIdx + this.total)
+    console.log(this.dataIdx, this.datas.length, this.total, _data, 'dddd')
+    if (_data) {
       this.updateContent(_data)
     }
     this.updateFocus()
@@ -448,8 +449,8 @@ export default class Grid {
       side: this.side,
       corner: this.corner,
       turnDirection: this.turnDirection,
-      oldIdx: this.oldRow * this.columns + this.oldColumn,
-      newIdx: this.currRow * this.columns + this.currColumn,
+      oldIdx: old.row * this.columns + old.column,
+      newIdx: curr.row * this.columns + curr.column,
       fuzzy: this.fuzzy,
       currPage: this.currPage,
       totalPage: this.totalPage

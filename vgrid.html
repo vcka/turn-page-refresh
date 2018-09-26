@@ -88,6 +88,10 @@
       background: blue;
     }
 
+    .second {
+      background: red;
+    }
+
     .bfocus {
       color: #fff800;
     }
@@ -100,36 +104,49 @@
       <div class="line right-line"></div>
     </div>
     <div id="wrap">
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
-        <li><span class="first"></span></li>
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
+      <div class="col">
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+        <li><span class="first"></span><span class="second"></span></li>
+      </div>
     </div>
     <script src="./src/gridDatas.js"></script>
     <script src="./dist/turn.vgrid.iife.js"></script>
     <script>
 
-    const rows = 1, columns = 4
+    const rows = 5, columns = 4
     const span1 = document.querySelectorAll('.first')
     for (let i = 0; i < rows * columns; i++) {
       const s1 = span1[i]
       s1.innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+      const span2 = s1.parentElement.querySelector('.second')
+      const isTvod = gridDatas[i].isTvod
+      if (gridDatas[i] && gridDatas[i].isTvod) {
+        span2.innerHTML = gridDatas[i] && gridDatas[i].CityName || ''
+      }
     }
 
     const [
@@ -142,12 +159,12 @@
 
       return new Array(3 - m.length + 1).join('0') + n
     }
-    const VGrid = turn.vgrid.Grid
+    const VGrid = turn.vgrid.VGrid
     const grid = new VGrid({
       statics: {
         items: [].slice.call(document.querySelectorAll('.first'))
       },
-      /* multiCols: 4,*/
+      multiCols: 4,
       rows, columns, // 5 x 4
       cachedDataIdx: 20,
       datas: gridDatas,
@@ -206,6 +223,17 @@
         }
       },
 
+      interrupt: {
+        attr: 'isTvod',
+        handler: function(flag, el) {
+          const second = el.parentElement.querySelector('.second')
+          if (flag) {
+            add(second, 'focus')
+          } else {
+            remove(second, 'focus')
+          }
+        }
+      },
       updateFocus: function(opts) {
       },
 
