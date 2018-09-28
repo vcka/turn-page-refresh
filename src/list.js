@@ -37,7 +37,7 @@ export default class List {
     this.statics = opts.statics
     this.callbacks = opts.callbacks
     this.direction = opts.direction || 'vertical'
-    this.dataIdx = 0
+    this.oldDataIdx = this.dataIdx = 0
     this.dataLen = this.datas.length
     if (typeof(opts.cachedDataIdx) === 'string') {
       opts.cachedDataIdx = parseInt(opts.cachedDataIdx, 10)
@@ -46,6 +46,7 @@ export default class List {
       opts.cachedDataIdx > this.dataLen - 1 || opts.cachedDataIdx < 0
     ) ? 0 : (opts.cachedDataIdx || 0)
     this.dataIdx = this.cachedDataIdx || 0
+    console.log(this.dataIdx, this.oldDataIdx, 'cachedDataIdx')
     // the current row's index()
     this.currIdx = 0
     this.oldIdx = 0
@@ -80,7 +81,7 @@ export default class List {
   reinit(opts) {
     if (!opts || !opts.datas || !opts.datas.length) { return false }
     this.datas = opts.datas
-    this.dataIdx = this.currIdx = this.oldIdx = 0
+    this.chgDataIdx(this.currIdx = this.oldIdx = 0)
     this.noInitFocus = opts.noInitFocus
     this.init()
   }
@@ -263,7 +264,7 @@ export default class List {
       return false
     }
     this.blur()
-    this.dataIdx = idx !== -1 ? idx : num - 1
+    this.chgDataIdx(idx !== -1 ? idx : num - 1)
     this.oldIdx = this.currIdx
     this.currIdx = this.dataIdx % this.rows
 
@@ -311,9 +312,11 @@ export default class List {
     return {
       datas: this.datas,
       data: this.datas[this.dataIdx],
+      oldData: this.datas[this.oldDataIdx],
       currIdx: this.currIdx,
       oldIdx: this.oldIdx,
       dataIdx: this.dataIdx,
+      oldDataIdx: this.oldDataIdx,
       inputNums: this.inputNums,
       currEl: this.statics.items[this.currIdx],
       oldEl: this.statics.items[this.oldEl],
@@ -334,12 +337,13 @@ export default class List {
     this.execCallbacks('moveUpDown')
   }
 
+  chgDataIdx(newIdx) {
+    this.oldDataIdx = this.dataIdx
+    this.dataIdx = newIdx
+  }
+
   pageUp() {
     if (!this.datas || !this.datas.length) { return false }
-
-    if (this.direction === 'horizontal') {
-      return false
-    }
 
     const total = this.datas.length
     if (total <= this.rows) { return false }
@@ -347,14 +351,14 @@ export default class List {
     this.oldIdx = this.currIdx
     const mod = this.datas.length % this.rows
 
-    this.dataIdx -= this.rows
+    this.chgDataIdx(this.dataIdx - this.rows)
 
     if (this.dataIdx < 0) {
-      this.dataIdx = this.datas.length - (mod || this.rows)
+      this.chgDataIdx(this.datas.length - (mod || this.rows))
       if (this.currIdx >= mod) {
         this.currIdx = 0
       } else {
-        this.dataIdx = this.dataIdx + this.currIdx
+        this.chgDataIdx(this.dataIdx + this.currIdx)
       }
     }
 
@@ -363,10 +367,6 @@ export default class List {
 
   pageDown() {
     if (!this.datas || !this.datas.length) { return false }
-
-    if (this.direction === 'horizontal') {
-      return false
-    }
 
     const total = this.datas.length
     if (total <= this.rows) { return false }
@@ -377,31 +377,31 @@ export default class List {
     // this.dataIdx += this.rows
 
     if (this.dataIdx >= total - mod) {
-      this.currIdx = this.dataIdx = this.dataIdx % this.rows
+      this.chgDataIdx(this.currIdx = this.dataIdx % this.rows)
     } else {
-      this.dataIdx += this.rows
+      this.chgDataIdx(this.dataIdx + this.rows)
     }
 
 
     // 倒数第二页下翻页时，焦点变化
     if (this.dataIdx >= total) {
       if (mod === 0) {
-        this.dataIdx = this.currIdx = 0
+        this.chgDataIdx(this.currIdx = 0)
       } else if (this.currIdx > mod - 1) {
-        this.dataIdx = total - mod
+        this.chgDataIdx(total - mod)
         this.currIdx = 0
       } else {
-        this.dataIdx = total - mod + this.currIdx
+        this.chgDataIdx(total - mod + this.currIdx)
       }
     }
 
     this.idxChgHandler(this.vals.pdown)
   }
 
-  up() {
+  up(fromKeyLeft = false) {
     if (!this.datas || !this.datas.length) { return false }
 
-    if (this.direction === 'horizontal') {
+    if (this.direction === 'horizontal' && !fromKeyLeft) {
       return false
     }
 
@@ -420,18 +420,18 @@ export default class List {
     }
 
     if (this.dataIdx > 0) {
-      this.dataIdx--
+      this.chgDataIdx(this.dataIdx - 1)
     } else {
-      this.dataIdx = this.datas.length - 1
+      this.chgDataIdx(this.datas.length - 1)
     }
 
     this.idxChgHandler(this.vals.up)
   }
 
-  down() {
+  down(fromKeyRight = false) {
     if (!this.datas || !this.datas.length) { return false }
 
-    if (this.direction === 'horizontal') {
+    if (this.direction === 'horizontal' && !fromKeyRight) {
       return false
     }
 
@@ -446,9 +446,9 @@ export default class List {
     }
 
     if (this.dataIdx < this.datas.length - 1) {
-      this.dataIdx++
+      this.chgDataIdx(this.dataIdx + 1)
     } else {
-      this.dataIdx = 0
+      this.chgDataIdx(0)
     }
 
     this.idxChgHandler(this.vals.down)
@@ -459,15 +459,13 @@ export default class List {
   }
 
   left() {
-    if (this.direction === 'vertical') {
-      return false
-    }
+    if (this.direction === 'vertical') return false
+    this.up(true)
   }
 
   right() {
-    if (this.direction === 'vertical') {
-      return false
-    }
+    if (this.direction === 'vertical') return false
+    this.down(true)
   }
 
   keyHandler(keycode) {

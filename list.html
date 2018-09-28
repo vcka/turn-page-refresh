@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="page-view-size" content="1280*720">
+    <title>Magic</title>
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      float: left;
+      list-style: none;
+      width: 80px;
+      height: 60px;
+      line-height: 60px;
+      text-align: center;
+      background-color: green;
+      color: #fff;
+      font-size: 32px;
+      margin-right: 5px;
+    }
+
+
+
+    </style>
+  </head>
+  <body>
+    <ul>
+
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
+    <script src="./src/gridDatas.js"></script>
+    <script src="./dist/turn.list.iife.js"></script>
+    <script>
+    const items = document.querySelectorAll('li')
+    const list = new turn.list.List({
+      statics: {
+        items
+      },
+      direction: 'horizontal',
+      cachedDataIdx: ss('index'),
+      datas: gridDatas,
+      callbacks: {
+        findIdx(opts) {
+          return -1
+        },
+
+        inputingNumber(opts) {
+          console.log(opts, 'inputingNumber')
+        },
+        updateFocusDone(opts) {
+          ss('index', opts.dataIdx)
+        },
+        moveUpDown(opts) {
+        }
+      },
+      updateFocus: function(opts) {
+
+        console.log(opts, 'updateFocus')
+        const newEl = opts.statics.items[opts.newIdx]
+        const oldEl = opts.statics.items[opts.oldIdx]
+
+        oldEl.style.backgroundColor = 'green'
+        newEl.style.backgroundColor = 'blue'
+      },
+      updateTpl: function(statics, index, data) {
+
+        const curr = statics.items[index]
+        curr.innerHTML = data.CityName
+      },
+      clearTpl: function(statics) {
+
+        const items = [].slice.call(statics.items)
+        items.map(item => item.innerHTML = '')
+      },
+      focus: item => {
+        console.log('focus', item)
+        item.style.backgroundColor = 'blue'
+      },
+      blur: item => {
+        console.log('blur', item)
+        item.style.backgroundColor = 'green'
+      }
+    })
+
+      window.onkeydown = function(event) {
+
+        const e = event || window.event
+        const keycode = e.keyCode || e.which
+
+        list.keyHandler(keycode)
+      }
+
+      function add( elem, name ) {
+        if (!elem || !elem.className) { return false }
+        if ( !hasClass( elem, name ) ) {
+          elem.className += ( elem.className ? ' ' : '' ) + name
+        }
+      }
+
+      function remove( elem, name ) {
+        if (!elem || !elem.className) { return false }
+        let set = ' ' + elem.className + ' '
+
+        // Class name may appear multiple times
+        while ( set.indexOf( ' ' + name + ' ' ) >= 0 ) {
+          set = set.replace( ' ' + name + ' ', ' ' )
+        }
+
+        // Trim for prettiness
+        elem.className = typeof set.trim === 'function' ? set.trim() : set.replace( /^\s+|\s+$/g, '' )
+      }
+
+      function hasClass( elem, name ) {
+        if (!elem || !elem.className) { return false }
+        return ( ' ' + elem.className + ' ' ).indexOf( ' ' + name + ' ' ) >= 0
+      }
+
+      function ss(k, v, flag) {
+        if (!k || k === '') {
+          return false
+        }
+
+        let result = null
+
+        // to get
+        if (k && !v && v !== 0) {
+          if (type(k) === 'array') {
+            // 1. 数组，返回结果数组
+            result = []
+            for (let i = 0, len = k.length; i < len; i++) {
+              // get the value from session by the item of array
+              let val = window.sessionStorage.getItem(k[i])
+              result.push(val)
+            }
+
+            return result
+          } else if (type(k) === 'object') {
+            // 2. 对象，设置
+            for (let prop in k) {
+              let obj = k[prop]
+              if (obj) {
+                obj = typeof obj === 'object' ? JSON.stringify(obj) : obj + ''
+                window.sessionStorage.setItem(prop, obj)
+              }
+            }
+            return true
+          }
+          result = window.sessionStorage.getItem(k + '')
+          return typeof result === 'number' ? result + '' : result
+        } else if (k && v && flag === true) {
+          // use `k` to get an object from session
+          // use `v` to be a key of the object get above
+          // if the new key in object, return the value of object[v]
+          let obj = window.sessionStorage.getItem(k + '')
+          try {
+            obj = JSON.parse(obj)
+          } catch (e) {
+            return null
+          }
+
+          if (type(obj) === 'object' && obj.hasOwnProperty(v)) {
+            return obj[v]
+          }
+          return true
+        }
+
+        let val = typeof v === 'object' ? JSON.stringify(v) : v + ''
+        window.sessionStorage.setItem('' + k, val)
+        return true
+      }
+
+      function configMenuIdx(objId, index) {
+        return configSessionObj('menuIdx', objId, index)
+      }
+
+      function configSessionObj(objKey, key, value) {
+        if (!objKey) { return '' }
+
+        let idxObj = ss(objKey)
+        if (!idxObj) {
+          idxObj = { }
+        } else {
+          try {
+            idxObj = JSON.parse(idxObj)
+          } catch (error) {
+            idxObj = { }
+          }
+        }
+
+        const toSet = typeof(value) !== 'undefined'
+        if (typeof(key) === 'undefined') {
+          return idxObj
+        } else if (typeof(key) === 'object') {
+          // to set use object
+          for (let prop in key) {
+            if (key.hasOwnProperty(prop)) {
+              idxObj['' + prop] = key[prop]
+            }
+          }
+
+          ss(objKey, idxObj)
+
+          return idxObj
+        }
+
+        if (toSet) {
+          idxObj['' + key] = value
+          ss(objKey, idxObj)
+        } else {
+          if (!idxObj.hasOwnProperty(key)) {
+            idxObj[key] = 0
+            return 0
+          }
+
+          let v = idxObj[key]
+          try {
+            v = JSON.parse(v)
+          } catch (error) {
+            // do nothing
+          }
+
+          return v
+        }
+      }
+
+      function type(obj) {
+        return (
+          Object.prototype.toString
+                .call(obj)
+                .split(' ')[1]
+                .replace(/]/, '')
+                .toLowerCase()
+        )
+      }
+    </script>
+  </body>
+</html>
