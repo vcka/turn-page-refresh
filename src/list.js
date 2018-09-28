@@ -319,7 +319,7 @@ export default class List {
       oldDataIdx: this.oldDataIdx,
       inputNums: this.inputNums,
       currEl: this.statics.items[this.currIdx],
-      oldEl: this.statics.items[this.oldEl],
+      oldEl: this.statics.items[this.oldIdx],
       items: this.statics.items,
       pages: this.getPages('object')
     }
