@@ -34,6 +34,7 @@ export default class List {
       throw new Error('[Turn/List] the clear template function required.')
     }
 
+    this.focusName = opts.focusName || 'focus'
     this.statics = opts.statics
     this.callbacks = opts.callbacks
     this.direction = opts.direction || 'vertical'
@@ -59,16 +60,15 @@ export default class List {
     this.noInitFocus = opts.noInitFocus
     this.inputNums = []
     this.inputTimer = null
-    this.keys = {
-      UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
-      PAGE_UP: 33, PAGE_DOWN: 34, OK: 13, BACK: 8
-    }
-
-    if (opts.province && opts.province === '海南') {
-      this.keys = {
-        UP: 87, DOWN: 83, LEFT: 65, RIGHT: 68,
-        PAGE_UP: 306, PAGE_DOWN: 307, OK: 13, BACK: 8
-      }
+    this.keys = opts.keys || {
+      EPG_KEY_UP: 38,
+      EPG_KEY_DOWN: 40,
+      EPG_KEY_LEFT: 37,
+      EPG_KEY_RIGHT: 39,
+      EPG_KEY_PAGEUP: 33,
+      EPG_KEY_PAGEDOWN: 34,
+      EPG_KEY_CONFIRM: 13,
+      EPG_KEY_BACK: 8
     }
 
     this.vals = {
@@ -154,7 +154,7 @@ export default class List {
   focus() {
     if (!this.datas || !this.datas.length) { return false }
 
-    cls.add(this.items[this.currIdx], 'focus')
+    cls.add(this.items[this.currIdx], this.focusName)
 
     if (this._focus && typeof(this._focus) === 'function') {
       this._focus(this.items[this.currIdx])
@@ -163,7 +163,7 @@ export default class List {
 
   blur() {
     if (!this.datas || !this.datas.length) { return false }
-    cls.remove(this.items[this.currIdx], 'focus')
+    cls.remove(this.items[this.currIdx], this.focusName)
 
     if (this._blur && typeof(this._blur) === 'function') {
       this._blur(this.items[this.currIdx])
@@ -176,11 +176,11 @@ export default class List {
     const oldEl = this.items[this.oldIdx]
 
     if (this.currIdx !== this.oldIdx) {
-      cls.remove(oldEl, 'focus')
+      cls.remove(oldEl, this.focusName)
     }
 
     if (!this.noInitFocus) {
-      cls.add(newEl, 'focus')
+      cls.add(newEl, this.focusName)
     } else {
       this.noInitFocus = false
     }
@@ -298,14 +298,14 @@ export default class List {
     }
   }
 
-  execCallbacks(fnName) {
+  execCallbacks(fnName, opts) {
     if (!this.datas || !this.datas.length) { return false }
 
     const callbacks = this.callbacks
     if (!callbacks) { return false }
     const fn = callbacks[fnName] || function() {}
 
-    return fn(this.getCurrDatas())
+    return fn(opts || this.getCurrDatas())
   }
 
   getCurrDatas() {
@@ -470,36 +470,38 @@ export default class List {
 
   keyHandler(keycode) {
 
+    this.execCallbacks('keyHandler', { keycode })
+
     // 数字键
     if (keycode >= 48 && keycode <= 57) {
       this.inputNum(keycode - 48)
       return false
     }
     switch (keycode) {
-    case this.keys.OK:
+    case this.keys.EPG_KEY_CONFIRM:
       this.ok()
       break
-    case this.keys.UP:
+    case this.keys.EPG_KEY_UP:
       this.up()
       break
-    case this.keys.DOWN:
+    case this.keys.EPG_KEY_DOWN:
       this.down()
       break
-    case this.keys.LEFT:
+    case this.keys.EPG_KEY_LEFT:
       this.left()
       break
-    case this.keys.RIGHT:
+    case this.keys.EPG_KEY_RIGHT:
       this.right()
       break
     // case 73: // for test, i
-    case this.keys.PAGE_UP:
+    case this.keys.EPG_KEY_PAGEUP:
       this.pageUp()
       break
     // case 79: // for test, o
-    case this.keys.PAGE_DOWN:
+    case this.keys.EPG_KEY_PAGEDOWN:
       this.pageDown()
       break
-    case this.keys.BACK:
+    case this.keys.EPG_KEY_BACK:
       this.back()
       break
     default: break
