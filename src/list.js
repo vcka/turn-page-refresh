@@ -458,6 +458,8 @@ export default class List {
     this.execCallbacks('ok')
   }
 
+  back() { }
+
   left() {
     if (this.direction === 'vertical') return false
     this.up(true)
