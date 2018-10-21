@@ -52,6 +52,7 @@ export default class List {
     this.currIdx = 0
     this.oldIdx = 0
     this.rows = opts.rows || 7
+    this.currPageDatas = []
     this.totalPages = Math.ceil(this.datas.length / this.rows)
     this.currPage = 0
     this._updateFocus = opts.updateFocus
@@ -60,6 +61,7 @@ export default class List {
     this.noInitFocus = opts.noInitFocus
     this.inputNums = []
     this.inputTimer = null
+    this.isTurned = false
     this.keys = opts.keys || {
       EPG_KEY_UP: 38,
       EPG_KEY_DOWN: 40,
@@ -148,6 +150,9 @@ export default class List {
       }
     }
 
+    this.currPageDatas = datas.slice(0, this.rows)
+
+    this.isTurned = true
     this.execCallbacks('updateRowsDone')
   }
 
@@ -190,6 +195,7 @@ export default class List {
     })
 
     this.execCallbacks('updateFocusDone')
+    this.isTurned = false
   }
 
   updateList(direction) {
@@ -321,7 +327,8 @@ export default class List {
       currEl: this.statics.items[this.currIdx],
       oldEl: this.statics.items[this.oldIdx],
       items: this.statics.items,
-      pages: this.getPages('object')
+      pages: this.getPages('object'),
+      currPageDatas: this.currPageDatas
     }
   }
 
