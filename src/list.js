@@ -78,6 +78,7 @@ export default class List {
     }
 
     this.init()
+    return true
   }
 
   reinit(opts) {
@@ -86,6 +87,7 @@ export default class List {
     this.chgDataIdx(this.currIdx = this.oldIdx = 0)
     this.noInitFocus = opts.noInitFocus
     this.init()
+    return true
   }
 
   init() {
@@ -107,6 +109,7 @@ export default class List {
 
     this.execCallbacks('moveUpDown')
     this.execCallbacks('inited')
+    return true
   }
 
   clear() {
@@ -154,6 +157,7 @@ export default class List {
 
     this.isTurned = true
     this.execCallbacks('updateRowsDone')
+    return true
   }
 
   focus() {
@@ -164,6 +168,7 @@ export default class List {
     if (this._focus && typeof(this._focus) === 'function') {
       this._focus(this.items[this.currIdx])
     }
+    return true
   }
 
   blur() {
@@ -173,6 +178,7 @@ export default class List {
     if (this._blur && typeof(this._blur) === 'function') {
       this._blur(this.items[this.currIdx])
     }
+    return true
   }
 
   updateFocus() {
@@ -196,6 +202,7 @@ export default class List {
 
     this.execCallbacks('updateFocusDone')
     this.isTurned = false
+    return true
   }
 
   updateList(direction) {
@@ -247,6 +254,7 @@ export default class List {
 
       this.updateRows(this.items, datas)
     }
+    return true
   }
 
   jump(num) {
@@ -275,6 +283,7 @@ export default class List {
     this.currIdx = this.dataIdx % this.rows
 
     this.idxChgHandler(this.vals.jump)
+    return true
   }
 
   inputNum(num) {
@@ -370,6 +379,7 @@ export default class List {
     }
 
     this.idxChgHandler(this.vals.pup)
+    return true
   }
 
   pageDown() {
@@ -403,6 +413,7 @@ export default class List {
     }
 
     this.idxChgHandler(this.vals.pdown)
+    return true
   }
 
   up(fromKeyLeft = false) {
@@ -433,6 +444,7 @@ export default class List {
     }
 
     this.idxChgHandler(this.vals.up)
+    return true
   }
 
   down(fromKeyRight = false) {
@@ -459,6 +471,7 @@ export default class List {
     }
 
     this.idxChgHandler(this.vals.down)
+    return true
   }
 
   ok() {
@@ -470,11 +483,13 @@ export default class List {
   left() {
     if (this.direction === 'vertical') return false
     this.up(true)
+    return true
   }
 
   right() {
     if (this.direction === 'vertical') return false
     this.down(true)
+    return true
   }
 
   keyHandler(keycode) {

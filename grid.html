@@ -122,10 +122,10 @@
         <li><span class="first"></span></li>
     </div>
     <script src="./src/gridDatas.js"></script>
-    <script src="./dist/turn.vgrid.iife.js"></script>
+    <script src="./dist/turn.grid.iife.js"></script>
     <script>
 
-    const rows = 1, columns = 4
+    const rows = 2, columns = 4
     const span1 = document.querySelectorAll('.first')
     for (let i = 0; i < rows * columns; i++) {
       const s1 = span1[i]
@@ -142,8 +142,9 @@
 
       return new Array(3 - m.length + 1).join('0') + n
     }
-    const VGrid = turn.vgrid.Grid
-    const grid = new VGrid({
+    console.log(turn)
+    const Grid = turn.grid.Grid
+    const grid = new Grid({
       statics: {
         items: [].slice.call(document.querySelectorAll('.first'))
       },

@@ -27,16 +27,15 @@ export default class Grid {
     // fns outer
     this._updateFocus = opts.updateFocus
 
-    this.keys = {
-      UP: 38, DOWN: 40, LEFT: 37, RIGHT: 39,
-      PAGE_UP: 33, PAGE_DOWN: 34, OK: 13, BACK: 8
-    }
-
-    if (opts.province && opts.province === '海南') {
-      this.keys = {
-        UP: 87, DOWN: 83, LEFT: 65, RIGHT: 68,
-        PAGE_UP: 306, PAGE_DOWN: 307, OK: 13, BACK: 8
-      }
+    this.keys = opts.keys || {
+      EPG_KEY_UP: 38,
+      EPG_KEY_DOWN: 40,
+      EPG_KEY_LEFT: 37,
+      EPG_KEY_RIGHT: 39,
+      EPG_KEY_PAGEUP: 33,
+      EPG_KEY_PAGEDOWN: 34,
+      EPG_KEY_CONFIRM: 13,
+      EPG_KEY_BACK: 8
     }
 
     this.vals = {
@@ -465,14 +464,14 @@ export default class Grid {
     if (!this.interrupt) { return false }
 
     const attr = this.interrupt.attr
-    if (keycode === this.keys.LEFT) {
+    if (keycode === this.keys.EPG_KEY_LEFT) {
       if (data.hasHold) {
         data.hasHold = false
         this.interrupt.handler(false, currEl)
         this.focus()
         return true
       }
-    } else if (keycode === this.keys.RIGHT) {
+    } else if (keycode === this.keys.EPG_KEY_RIGHT) {
       if (data.hasHold) {
         if (this.isLastCol) { return true }
         data.hasHold = false
@@ -483,9 +482,14 @@ export default class Grid {
         this.interrupt.handler(true, currEl)
         return true
       }
-    } else if (keycode === this.keys.UP || keycode === this.keys.DOWN) {
-      if (keycode === this.keys.UP && this.side === this.vals.up) return true
-      if (keycode === this.keys.DOWN && (
+    } else if (
+      keycode === this.keys.EPG_KEY_UP ||
+      keycode === this.keys.EPG_KEY_DOWN
+    ) {
+      if (
+        keycode === this.keys.EPG_KEY_UP && this.side === this.vals.up
+      ) return true
+      if (keycode === this.keys.EPG_KEY_DOWN && (
         this.side === this.vals.down || this.isLastOne || this.isLastRow
       )) return true
 
@@ -510,27 +514,27 @@ export default class Grid {
       }
     }
     switch (keycode) {
-    case this.keys.UP:
+    case this.keys.EPG_KEY_UP:
       this.up()
       break
-    case this.keys.DOWN:
+    case this.keys.EPG_KEY_DOWN:
       this.down()
       break
-    case this.keys.LEFT:
+    case this.keys.EPG_KEY_LEFT:
       this.left()
       break
-    case this.keys.RIGHT:
+    case this.keys.EPG_KEY_RIGHT:
       this.right()
       break
       // case 73: // for test, i
-    case this.keys.PAGE_UP:
+    case this.keys.EPG_KEY_PAGEUP:
       this.pageUp()
       break
       // case 79: // for test, o
-    case this.keys.PAGE_DOWN:
+    case this.keys.EPG_KEY_PAGEDOWN:
       this.pageDown()
       break
-    case this.keys.BACK:
+    case this.keys.EPG_KEY_BACK:
       this.execCallbacks('keyBack')
       // this.back()
       break
