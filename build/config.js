@@ -33,9 +33,9 @@ const banner =
 const makeObj = (opts) => {
   let target = 'dist/'
   if (opts.env && opts.env === 'prod') {
-    target = 'dist/' + constants.MODULE_NAME + '.' + (opts.name || opts.fmt) + '.min.js'
+    target = 'dist/' + (opts.name || 'turn.page') + '.' + opts.fmt + '.min.js'
   } else {
-    target = 'dist/' + constants.MODULE_NAME + '.' + (opts.name || opts.fmt) + '.js'
+    target = 'dist/' + (opts.name || 'turn.page') + '.' + opts.fmt + '.js'
   }
   return {
     entry: resolve(opts.entry || 'src/index.js'),
@@ -47,16 +47,44 @@ const makeObj = (opts) => {
   }
 }
 
-const builds = {
-  'web-dev-cjs': makeObj({ fmt: 'cjs' }),
-  'web-dev-esm': makeObj({ fmt: 'es', name: 'esm' }),
-  'web-dev-umd': makeObj({ fmt: 'umd' }),
-  'web-dev-iife': makeObj({ fmt: 'iife' }),
-  'web-prod-cjs': makeObj({ fmt: 'cjs', env: 'prod' }),
-  'web-prod-esm': makeObj({ fmt: 'es', env: 'prod', name: 'esm' }),
-  'web-prod-umd': makeObj({ fmt: 'umd', env: 'prod' }),
-  'web-prod-iife': makeObj({ fmt: 'iife', env: 'prod' })
+function getAllBuildsByPluginName(name = '', entry = 'src/index.js') {
+  const obj = {}
+  let key = 'web-'
+  ;['dev', 'prod'].map(env => {
+    const bakKey = key
+    key += env + '-'
+    ;['cjs', 'es', 'umd', 'iife'].map(fmt => {
+      const bakKey = key
+      key += fmt + (name ? ('-' + name) : '')
+      // -> web-dev-cjs-list
+      obj[key] = makeObj({ fmt, name, env, entry })
+      key = bakKey
+    })
+    key = bakKey
+  })
+
+  return obj
 }
+
+function concatObj(plugins = []) {
+  const obj = {}
+
+  plugins.map(plugin => {
+    const res = getAllBuildsByPluginName(plugin.name, plugin.entry)
+    for (let prop in res) {
+      obj[prop] = res[prop]
+    }
+  })
+
+  return obj
+}
+
+const builds = concatObj([
+  { name: '', entry: '' },
+  { name: 'turn.list', entry: 'src/list.js' },
+  { name: 'turn.grid', entry: 'src/grid.js' },
+  { name: 'turn.vgrid', entry: 'src/vgrid.js' }
+])
 
 function genConfig(name) {
   const opts = builds[name]

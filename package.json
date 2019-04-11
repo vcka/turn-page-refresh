@@ -5,11 +5,14 @@
   "main": "rollup.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "rollup -w -c build/config.js --environment TARGET:web-dev-esm",
+    "dev": "rollup -w -c build/config.js --environment TARGET:web-dev-es",
     "dev:cjs": "rollup -w -c build/config.js --environment TARGET:web-dev-cjs",
-    "dev:esm": "rollup -w -c build/config.js --environment TARGET:web-dev-esm",
+    "dev:esm": "rollup -w -c build/config.js --environment TARGET:web-dev-es",
     "dev:umd": "rollup -w -c build/config.js --environment TARGET:web-dev-umd",
     "dev:iife": "rollup -w -c build/config.js --environment TARGET:web-dev-iife",
+    "prod:es:list": "rollup -w -c build/config.js --environment TARGET:web-prod-es-list",
+    "prod:es:grid": "rollup -w -c build/config.js --environment TARGET:web-prod-es-grid",
+    "prod:es:vgrid": "rollup -w -c build/config.js --environment TARGET:web-prod-es-vgrid",
     "build": "node build/build.js"
   },
   "repository": "https://github.com/gcclll/turn-page-refresh.git",
@@ -55,5 +58,8 @@
     "rollup-watch": "^4.3.1",
     "shelljs": "^0.7.8",
     "uglify-js": "^3.1.10"
+  },
+  "dependencies": {
+    "uglify-es": "^3.3.9"
   }
 }
